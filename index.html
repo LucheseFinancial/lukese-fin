@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <!-- Meta tag per PWA e Mobile -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -20,6 +21,11 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 
   <style>
+  #sezione-dashboard select, #sezione-dashboard input {
+    height: 42px; /* Uniforma l'altezza di tutti i selettori */
+    border-color: var(--border);
+    background-color: var(--bg);
+}
   /* 1. Cambia il font di base */
 body { 
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif; 
@@ -130,12 +136,47 @@ body {
 }
 
 /* Adattamento per dispositivi mobili (li mette uno sopra l'altro se lo schermo è piccolo) */
+/* --- OTTIMIZZAZIONE MOBILE --- */
 @media (max-width: 1024px) {
+    .sidebar {
+        transform: translateX(-100%); /* Nasconde la sidebar a sinistra */
+        transition: transform 0.3s ease;
+        z-index: 10000;
+        width: 280px;
+        background: var(--card) !important; /* Più leggibile su mobile */
+        box-shadow: 10px 0 30px rgba(0,0,0,0.1);
+    }
+
+    .sidebar.open {
+        transform: translateX(0); /* La fa scorrere dentro quando clicchi */
+    }
+
+    .main-content {
+        margin-left: 0 !important; /* Toglie il buco a sinistra */
+        padding: 70px 15px 20px 15px !important; /* Spazio per il tasto Menu */
+    }
+
+    #mobile-menu-btn {
+        display: block !important; /* Mostra il tasto Menu solo su mobile */
+    }
+
+    /* Adatta le card e i grafici */
+    .report-grid {
+        grid-template-columns: 1fr !important; /* Mette i box uno sopra l'altro */
+    }
+    
     .dashboard-middle-row {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr !important;
+    }
+
+    .hero-card #saldo {
+        font-size: 28px !important;
+    }
+
+    .input-grid {
+        grid-template-columns: 1fr !important; /* Inserimento dati tutto in colonna */
     }
 }
-
 /* Rimuoviamo il margine inferiore dai widget interni per non sfasare il layout */
 #widget-velocity, #smart-insights-area {
     margin-bottom: 0 !important;
@@ -760,6 +801,11 @@ body {
 </aside>
 
 <main class="main-content">
+<main class="main-content">
+  <!-- Pulsante per aprire il menu su Mobile -->
+  <button id="mobile-menu-btn" onclick="toggleSidebarMobile()" style="display:none; position: fixed; top: 15px; left: 15px; z-index: 10001; background: var(--primary); color: white; border: none; padding: 10px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+    ☰ Menu
+  </button>
 <!-- DASHBOARD -->
 <div id="sezione-dashboard">
     <div class="card hero-card">
@@ -863,26 +909,40 @@ body {
       </div>
     </div>
 
-    <div class="card">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px">
-        <span class="section-title" style="margin:0">Cronologia Operazioni</span>
-        <select id="filtroBanca" onchange="renderLista()" style="padding:8px; font-size:12px; background:var(--bg)"><option value="tutte">Tutti i conti</option></select>
-  <select id="filtroCategoria" onchange="renderLista()" style="padding:8px; font-size:12px; background:var(--bg)"><option value="tutte">Tutte le categorie</option></select>
-  <!-- NUOVO FILTRO TIPO MOVIMENTO -->
-  <select id="filtroTipoMovimento" onchange="renderLista()" style="padding:8px; font-size:12px; background:var(--bg)">
-    <option value="tutti">Tutti i movimenti</option>
-    <option value="entrata">Entrate</option>
-    <option value="spesa">Uscite</option>
-  </select>
-    <select id="filtroMovimentiTecnici" onchange="renderLista()" style="padding:8px; font-size:12px; background:var(--bg)">
-    <option value="escludi">Escludi Giroconti</option>
-    <option value="includi">Includi Giroconti</option>
-  </select>
-  <!---------------------------------->
-  <select id="limiteLista" onchange="renderLista()" style="padding:8px; font-size:12px; background:var(--bg)"><option value="20">20 op.</option><option value="50">50 op.</option><option value="all">Tutte</option></select>
-  <input type="text" id="cerca" placeholder="Cerca..." oninput="renderLista()" style="width:160px; background:var(--bg); padding:8px">
-</div>
+<div class="card">
+      <span class="section-title">Cronologia Operazioni</span>
+      
+      <!-- Contenitore Filtri Ottimizzato -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; margin-bottom: 25px; align-items: center;">
+          
+          <select id="filtroBanca" onchange="renderLista()" style="width:100%">
+              <option value="tutte">Tutti i conti</option>
+          </select>
+          
+          <select id="filtroCategoria" onchange="renderLista()" style="width:100%">
+              <option value="tutte">Tutte le categorie</option>
+          </select>
+          
+          <select id="filtroTipoMovimento" onchange="renderLista()" style="width:100%">
+              <option value="tutti">Tutti i movimenti</option>
+              <option value="entrata">Entrate</option>
+              <option value="spesa">Uscite</option>
+          </select>
+          
+          <select id="filtroMovimentiTecnici" onchange="renderLista()" style="width:100%">
+              <option value="escludi">Escludi Giroconti</option>
+              <option value="includi">Includi Giroconti</option>
+          </select>
+          
+          <select id="limiteLista" onchange="renderLista()" style="width:100%">
+              <option value="20">Mostra 20 op.</option>
+              <option value="50">Mostra 50 op.</option>
+              <option value="all">Mostra Tutte</option>
+          </select>
+          
+          <input type="text" id="cerca" placeholder="Cerca nel testo..." oninput="renderLista()" style="width:100%">
       </div>
+
       <div id="listaMovimenti"></div>
     </div>
   </div>
@@ -1073,6 +1133,27 @@ body {
 </main>
 
 <script>
+function toggleSidebarMobile() {
+    const sidebar = document.querySelector('.sidebar');
+    sidebar.classList.toggle('open');
+    
+    // Cambia il testo del tasto da Menu a Chiudi
+    const btn = document.getElementById('mobile-menu-btn');
+    if (sidebar.classList.contains('open')) {
+        btn.innerText = '✕ Chiudi';
+    } else {
+        btn.innerText = '☰ Menu';
+    }
+}
+
+// Chiudi il menu automaticamente quando clicchi su una voce (Dashboard, Storico, ecc.)
+document.querySelectorAll('.btn-nav').forEach(btn => {
+    btn.addEventListener('click', () => {
+        if (window.innerWidth <= 1024) {
+            toggleSidebarMobile();
+        }
+    });
+});
 let dataCorrenteCalendario = new Date();
 
 function cambiaMeseCalendario(direzione) {
