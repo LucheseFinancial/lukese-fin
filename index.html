@@ -136,46 +136,63 @@ body {
 }
 
 /* Adattamento per dispositivi mobili (li mette uno sopra l'altro se lo schermo è piccolo) */
-/* --- OTTIMIZZAZIONE MOBILE --- */
+/* --- OTTIMIZZAZIONE MOBILE PROFESSIONALE --- */
 @media (max-width: 1024px) {
     .sidebar {
-        transform: translateX(-100%); /* Nasconde la sidebar a sinistra */
-        transition: transform 0.3s ease;
-        z-index: 10000;
-        width: 280px;
-        background: var(--card) !important; /* Più leggibile su mobile */
-        box-shadow: 10px 0 30px rgba(0,0,0,0.1);
+        position: fixed !important;
+        top: 0;
+        left: 0;
+        width: 280px !important;
+        height: 100vh !important;
+        transform: translateX(-100%); /* Nascosta a sinistra */
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 10000 !important;
+        background: white !important;
+        box-shadow: 20px 0 50px rgba(0,0,0,0.2);
+        display: block !important;
+        overflow-y: auto;
     }
 
     .sidebar.open {
-        transform: translateX(0); /* La fa scorrere dentro quando clicchi */
+        transform: translateX(0); /* Appare scorrendo */
     }
 
     .main-content {
-        margin-left: 0 !important; /* Toglie il buco a sinistra */
-        padding: 70px 15px 20px 15px !important; /* Spazio per il tasto Menu */
+        margin-left: 0 !important;
+        padding: 80px 15px 20px 15px !important;
+        width: 100% !important;
     }
 
     #mobile-menu-btn {
-        display: block !important; /* Mostra il tasto Menu solo su mobile */
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        position: fixed;
+        top: 15px;
+        left: 15px;
+        z-index: 10001;
+        background: var(--primary);
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 50px;
+        font-weight: bold;
+        box-shadow: 0 4px 15px rgba(0, 122, 255, 0.4);
     }
 
-    /* Adatta le card e i grafici */
-    .report-grid {
-        grid-template-columns: 1fr !important; /* Mette i box uno sopra l'altro */
-    }
-    
-    .dashboard-middle-row {
+    .report-grid, .dashboard-middle-row, .input-grid {
         grid-template-columns: 1fr !important;
     }
 
-    .hero-card #saldo {
-        font-size: 28px !important;
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.4);
+        z-index: 9999;
+        backdrop-filter: blur(2px);
     }
-
-    .input-grid {
-        grid-template-columns: 1fr !important; /* Inserimento dati tutto in colonna */
-    }
+    .sidebar-overlay.active { display: block; }
 }
 /* Rimuoviamo il margine inferiore dai widget interni per non sfasare il layout */
 #widget-velocity, #smart-insights-area {
@@ -744,6 +761,7 @@ body {
     </div>
   </div>
 </div>
+<div class="sidebar-overlay" onclick="toggleSidebarMobile()"></div>
 
 <aside class="sidebar">
   <div class="brand-container">
@@ -1135,24 +1153,29 @@ body {
 <script>
 function toggleSidebarMobile() {
     const sidebar = document.querySelector('.sidebar');
-    sidebar.classList.toggle('open');
-    
-    // Cambia il testo del tasto da Menu a Chiudi
+    const overlay = document.querySelector('.sidebar-overlay');
     const btn = document.getElementById('mobile-menu-btn');
+    
+    sidebar.classList.toggle('open');
+    if (overlay) overlay.classList.toggle('active');
+    
     if (sidebar.classList.contains('open')) {
-        btn.innerText = '✕ Chiudi';
+        btn.innerHTML = '✕ Chiudi';
+        document.body.style.overflow = 'hidden'; // Blocca lo scroll sotto il menu
     } else {
-        btn.innerText = '☰ Menu';
+        btn.innerHTML = '☰ Menu';
+        document.body.style.overflow = 'auto';
     }
 }
 
-// Chiudi il menu automaticamente quando clicchi su una voce (Dashboard, Storico, ecc.)
-document.querySelectorAll('.btn-nav').forEach(btn => {
-    btn.addEventListener('click', () => {
-        if (window.innerWidth <= 1024) {
+// Chiudi il menu automaticamente quando clicchi su una voce del menu
+document.addEventListener('click', function(e) {
+    if (window.innerWidth <= 1024 && e.target.classList.contains('btn-nav')) {
+        const sidebar = document.querySelector('.sidebar');
+        if (sidebar.classList.contains('open')) {
             toggleSidebarMobile();
         }
-    });
+    }
 });
 let dataCorrenteCalendario = new Date();
 
