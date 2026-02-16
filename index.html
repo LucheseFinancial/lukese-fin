@@ -20,6 +20,65 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 
   <style>
+  /* --- MENU A COMPARSA PER MOBILE --- */
+@media (max-width: 1024px) {
+    .sidebar {
+        position: fixed !important;
+        top: 0;
+        left: 0;
+        width: 280px !important;
+        height: 100vh !important;
+        transform: translateX(-100%); /* La nasconde a sinistra */
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 10000 !important;
+        background: white !important; /* Colore solido per non vedere sotto */
+        box-shadow: 10px 0 30px rgba(0,0,0,0.2);
+        display: block !important;
+    }
+
+    /* Quando aggiungiamo la classe "open", la sidebar scivola dentro */
+    .sidebar.open {
+        transform: translateX(0);
+    }
+
+    /* Il contenuto principale occupa tutto lo schermo */
+    .main-content {
+        margin-left: 0 !important;
+        width: 100% !important;
+        padding: 80px 15px 20px 15px !important;
+    }
+
+    /* Il tasto Menu (Pillola blu) */
+    #mobile-menu-btn {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        position: fixed;
+        top: 15px;
+        left: 15px;
+        z-index: 10001;
+        background: var(--primary);
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 50px;
+        font-weight: bold;
+        box-shadow: 0 4px 15px rgba(0, 122, 255, 0.4);
+    }
+
+    /* Sfondo scuro che appare quando il menu è aperto */
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 9999;
+        backdrop-filter: blur(2px);
+    }
+    .sidebar-overlay.active {
+        display: block;
+    }
+}
   /* 1. Cambia il font di base */
 body { 
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif; 
@@ -760,6 +819,8 @@ body {
 </aside>
 
 <main class="main-content">
+<div class="sidebar-overlay" onclick="toggleSidebarMobile()"></div>
+<button id="mobile-menu-btn" onclick="toggleSidebarMobile()" style="display:none">☰ Menu</button>
 <!-- DASHBOARD -->
 <div id="sezione-dashboard">
     <div class="card hero-card">
@@ -2453,6 +2514,36 @@ function applicaPreferenzaVisibilita() {
         document.getElementById('btnToggleCategorie').innerText = '🙈';
     }
 }
+function toggleSidebarMobile() {
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.querySelector('.sidebar-overlay');
+    const btn = document.getElementById('mobile-menu-btn');
+    
+    // Attiva o disattiva le classi
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('active');
+    
+    // Cambia il testo del bottone
+    if (sidebar.classList.contains('open')) {
+        btn.innerHTML = '✕ Chiudi';
+        document.body.style.overflow = 'hidden'; // Impedisce alla pagina di scorrere sotto
+    } else {
+        btn.innerHTML = '☰ Menu';
+        document.body.style.overflow = 'auto'; // Riattiva lo scroll
+    }
+}
+
+// Chiude il menu automaticamente quando clicchi su una voce (es. Dashboard, Storico...)
+document.querySelectorAll('.btn-nav').forEach(link => {
+    link.addEventListener('click', () => {
+        if (window.innerWidth <= 1024) {
+            const sidebar = document.querySelector('.sidebar');
+            if (sidebar.classList.contains('open')) {
+                toggleSidebarMobile();
+            }
+        }
+    });
+});
 </script>
 <div id="wrapped-overlay" onclick="this.style.display='none'">
     <div class="wrapped-content">
