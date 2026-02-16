@@ -1,0 +1,2465 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<!-- Meta tag per PWA e Mobile -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Lukese Fin">
+<link rel="apple-touch-icon" href="logo.png">
+<meta name="theme-color" content="#007AFF">
+<link rel="manifest" href="manifest.json">
+<!-- Sostituisci o aggiungi questo sotto i tuoi meta tag -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+<!-- Per l'icona dell'occhio (SVG) -->
+<script src="https://unpkg.com/lucide@latest"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lukese Financial — Professional Visual</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+
+  <style>
+  /* 1. Cambia il font di base */
+body { 
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif; 
+    margin: 0; 
+    display: flex; 
+    min-height: 100vh;
+    color: var(--text);
+    /* SFONDO PREMIUM: Mesh gradient fisso che non stanca l'occhio */
+    background-color: #f8fafd;
+    background-image: 
+        radial-gradient(at 0% 0%, rgba(0, 122, 255, 0.03) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(175, 82, 222, 0.03) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(0, 122, 255, 0.05) 0px, transparent 50%),
+        radial-gradient(at 0% 100%, rgba(52, 199, 89, 0.02) 0px, transparent 50%);
+    background-attachment: fixed;
+}
+
+/* 2. Sfondo con Immagine Astratta e Soffusa */
+#login-overlay {
+    position: fixed;
+    inset: 0;
+    /* Usa un'immagine di architettura/business moderna da Unsplash */
+    background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), 
+                url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2070&auto=format&fit=crop');
+    background-size: cover;
+    background-position: center;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 3. Card Glassmorphism */
+.login-card {
+    background: rgba(255, 255, 255, 0.1); /* Sfondo trasparente */
+    backdrop-filter: blur(25px); /* Effetto sfocatura */
+    -webkit-backdrop-filter: blur(25px);
+    padding: 40px;
+    border-radius: 32px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    width: 380px;
+    /* Bordo sottilissimo e luminoso */
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: white;
+}
+
+/* 4. Animazione Logo (movimento verso l'alto) */
+#loginLogo {
+    width: 100%;
+    max-width: 250px;
+    height: auto;
+    /* Arrotondiamo gli angoli dell'immagine stessa */
+    border-radius: 20px; 
+    /* Aggiungiamo un'ombra leggerissima per staccarlo dal vetro */
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    /* Un pizzico di padding se il logo tocca i bordi bianchi */
+    padding: 10px;
+    background-color: white; /* Assicura che lo sfondo sia pulito */
+    display: inline-block;
+}
+
+@keyframes slideUpLogo {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* Icona Eye */
+.eye-icon {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    opacity: 0.6;
+    transition: 0.2s;
+}
+.eye-icon:hover { opacity: 1; }
+
+/* 6. Animazione Shake per Errore */
+.shake {
+    animation: shake 0.4s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-8px); }
+    50% { transform: translateX(8px); }
+    75% { transform: translateX(-8px); }
+}
+
+/* Bottone di login più "figo" */
+.login-card .btn-primary {
+    background: linear-gradient(135deg, #007AFF, #0056b3);
+    border: none;
+    box-shadow: 0 10px 20px rgba(0, 122, 255, 0.3);
+    border-radius: 14px;
+    font-size: 16px;
+    letter-spacing: 0.5px;
+}
+  /* Contenitore per affiancare Velocity e Insights */
+.dashboard-middle-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Due colonne uguali */
+    gap: 25px;                      /* Spazio tra i due widget */
+    margin-bottom: 30px;
+    align-items: start;             /* Allinea in alto */
+}
+
+/* Adattamento per dispositivi mobili (li mette uno sopra l'altro se lo schermo è piccolo) */
+@media (max-width: 1024px) {
+    .dashboard-middle-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Rimuoviamo il margine inferiore dai widget interni per non sfasare il layout */
+#widget-velocity, #smart-insights-area {
+    margin-bottom: 0 !important;
+}
+/* --- STILI SPENDING VELOCITY --- */
+.velocity-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.velocity-bar-bg { background: var(--bg); height: 8px; border-radius: 4px; overflow: hidden; margin-top: 5px; }
+.velocity-bar-fill { height: 100%; transition: width 0.8s ease-in-out; }
+
+/* --- STILI WRAPPED (SPOTIFY STYLE) --- */
+#wrapped-overlay {
+    position: fixed; inset: 0; background: linear-gradient(135deg, #007AFF, #5856D6, #FF2D55);
+    z-index: 11000; display: none; align-items: center; justify-content: center; color: white;
+    padding: 20px; animation: fadeIn 0.5s ease;
+}
+.wrapped-content { max-width: 400px; width: 100%; text-align: center; }
+.wrapped-stat-card { background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); padding: 20px; border-radius: 20px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.2); }
+
+/* --- ICONE DOCUMENTI --- */
+.btn-attach { background: var(--bg); border: 1.5px dashed var(--secondary); color: var(--secondary); padding: 8px; border-radius: 10px; cursor: pointer; font-size: 12px; transition: all 0.2s; }
+.btn-attach.active { border-color: var(--success); color: var(--success); background: rgba(52, 199, 89, 0.1); }
+/* --- STILE WIDGET AUTONOMIA --- */
+.autonomy-card {
+    background: rgba(52, 199, 89, 0.08) !important;
+    border: 1px solid rgba(52, 199, 89, 0.15) !important;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 20px 25px !important;
+}
+
+.autonomy-icon {
+    font-size: 32px;
+    background: white;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.autonomy-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.autonomy-text {
+    font-size: 14px;
+    color: var(--text);
+    opacity: 0.8;
+    line-height: 1.4;
+}
+
+.autonomy-days {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--success);
+}
+/* --- STILE CALENDARIO FINANZIARIO --- */
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 10px;
+    background: var(--border);
+    padding: 1px;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+}
+
+.calendar-day-name {
+    background: var(--bg);
+    padding: 10px;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--secondary);
+    text-transform: uppercase;
+}
+
+.calendar-day {
+    background: var(--card);
+    min-height: 110px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+}
+
+.calendar-day {
+    background: var(--card);
+    min-height: 120px; /* Aumentato ulteriormente per sicurezza */
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Mantiene lo spazio tra gli elementi */
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative; /* ESSENZIALE per posizionare i figli */
+}
+
+.day-indicators {
+    display: flex;
+    gap: 4px;
+    /* Posiziona gli indicatori in alto a destra */
+    position: absolute; 
+    top: 10px; 
+    right: 10px; 
+    padding-top: 0; /* Rimuovi se presente o metti a 0 */
+}
+
+/* Nuovo stile per il totale giornaliero */
+.daily-total {
+    font-size: 12px; /* Leggermente più grande per visibilità */
+    font-weight: 700;
+    text-align: right;
+    /* Posiziona il totale in basso a destra */
+    position: absolute;
+    bottom: 10px; /* Distanza dal bordo inferiore */
+    right: 10px; /* Distanza dal bordo destro */
+    left: 10px; /* Per permettere al testo di andare a capo se lungo */
+    /* Bordo temporaneo per debugging */
+    /* border: 1px solid blue; */ 
+}
+
+/* Assicurati che il numero del giorno non sia coperto */
+.day-number {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    position: absolute; /* Rendi il numero del giorno posizionabile */
+    top: 10px; /* Posiziona in alto a sinistra */
+    left: 10px;
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.dot-in { background-color: var(--success); box-shadow: 0 0 5px var(--success); }
+.dot-out { background-color: var(--danger); box-shadow: 0 0 5px var(--danger); }
+
+/* Dettagli Giorno */
+#day-details {
+    margin-top: 25px;
+    padding: 20px;
+    border-radius: 16px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    display: none; /* Appare solo al click */
+    animation: fadeInUp 0.3s ease-out;
+}  
+
+/* --- RIQUADRO PATRIMONIO: ETICHETTA SOPRA VALORE, BARRA SOTTILE --- */
+.hero-card {
+    background: linear-gradient(135deg, #007AFF, #0056b3) !important;
+    color: white !important;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(0, 122, 255, 0.2) !important;
+    
+    width: 100% !important; 
+    max-width: 100% !important;
+    
+    /* Padding ridotto per mantenerla sottile */
+    padding: 10px 25px !important; 
+    
+    border-radius: 16px !important;
+    margin-bottom: 25px !important;
+    
+    /* Cambiamo in colonna per mettere uno sopra l'altro */
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important; /* Allinea tutto a sinistra */
+    justify-content: center !important;
+    gap: 0 !important; /* Rimuove lo spazio tra etichetta e numero */
+}
+
+.hero-card .section-title {
+    color: rgba(255, 255, 255, 0.8) !important;
+    font-weight: 600 !important;
+    letter-spacing: 1px !important;
+    font-size: 13px !important; /* Scritta piccola sopra */
+    text-transform: uppercase !important;
+    margin: 0 !important;
+    line-height: 1 !important;
+}
+
+#saldo {
+    color: white !important;
+    font-size: 32px !important; /* Importo ben visibile */
+    font-weight: 800 !important;
+    margin-top: 2px !important; /* Un minimo di distacco dalla scritta sopra */
+    margin-bottom: 0 !important;
+    line-height: 1 !important;
+    
+}
+
+
+/* Container Modelli */
+#container-templates {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding: 15px 5px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+}
+
+/* Pulsante Modello */
+.template-pill {
+    position: relative;
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 10px 18px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.template-pill:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    background: var(--bg);
+}
+
+.template-pill b {
+    color: var(--primary);
+    font-weight: 700;
+}
+
+/* Tasto Elimina Modello */
+.template-delete {
+    position: absolute;
+    top: -8px;
+    right: -5px;
+    background: var(--danger);
+    color: white;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0; /* Invisibile di default */
+    transition: opacity 0.2s;
+    border: 2px solid var(--card);
+}
+
+.template-pill:hover .template-delete {
+    opacity: 1; /* Appare quando passi il mouse sul pulsante */
+}
+
+/* Tasto Aggiungi Modello */
+.btn-add-template {
+    background: transparent;
+    border: 1.5px dashed var(--primary);
+    color: var(--primary);
+    padding: 10px 18px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    transition: all 0.2s;
+}
+
+.btn-add-template:hover {
+    background: rgba(0, 122, 255, 0.05);
+}  
+  /* Stile per il Badge Notifiche */
+.badge-alert {
+    background: var(--danger);
+    color: white;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 2px 7px;
+    border-radius: 10px;
+    margin-left: auto; /* Lo spinge a destra nel menu */
+    min-width: 18px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(255, 59, 48, 0.3);
+}
+    :root {
+      --primary: #007AFF; --secondary: #8E8E93; --success: #34C759; --danger: #FF3B30; --warning: #FF9500;
+      --bg: #F5F5F7; --card: #FFFFFF; --text: #1D1D1F; --sidebar-bg: rgba(245, 245, 247, 0.85);
+      --border: rgba(0, 0, 0, 0.08); --shadow: 0 4px 24px rgba(0, 0, 0, 0.04); --radius: 16px;
+    }
+    [data-theme="dark"] {
+      --bg: #000000; --card: #1C1C1E; --text: #F5F5F7;
+      --sidebar-bg: rgba(28, 28, 30, 0.9); --border: rgba(255, 255, 255, 0.1);
+    }
+    * { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif; background-color: var(--bg); color: var(--text); margin: 0; display: flex; min-height: 100vh; }
+
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .card { animation: fadeInUp 0.4s ease-out forwards; }
+    
+    .insight-pill { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: 12px; margin-bottom: 10px; font-size: 14px; border: 1px solid rgba(0,0,0,0.03); animation: fadeInUp 0.5s ease-out; }
+    .insight-pos { background: rgba(52, 199, 89, 0.1); color: #1a7f37; border-left: 4px solid var(--success); }
+    .insight-dan { background: rgba(255, 59, 48, 0.1); color: #b51a00; border-left: 4px solid var(--danger); }
+
+    /* --- LOGIN PREMIUM ISOLATO (Non tocca il resto della pagina) --- */
+#login-overlay { 
+    position: fixed; 
+    inset: 0; 
+    /* Immagine astratta moderna */
+    background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), 
+                url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2070&auto=format&fit=crop');
+    background-size: cover;
+    background-position: center;
+    z-index: 9999; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    /* Applichiamo il font Inter SOLO qui dentro */
+    font-family: 'Inter', sans-serif;
+}
+
+#login-overlay .login-card { 
+    background: rgba(255, 255, 255, 0.1); 
+    backdrop-filter: blur(25px); 
+    -webkit-backdrop-filter: blur(25px);
+    padding: 40px; 
+    border-radius: 32px; 
+    box-shadow: 0 25px 50px rgba(0,0,0,0.4); 
+    text-align: center; 
+    width: 380px; 
+    border: 1px solid rgba(255, 255, 255, 0.3); 
+    color: white;
+}
+
+#login-overlay h1, #login-overlay p, #login-overlay input, #login-overlay button {
+    font-family: 'Inter', sans-serif; /* Forza il font moderno solo nel login */
+}
+
+#login-overlay .pass-wrapper { position: relative; margin-bottom: 25px; }
+
+#login-overlay #pass-input { 
+    width: 100% !important; 
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+    border-radius: 14px !important;
+    padding: 16px !important;
+    font-size: 20px !important;
+    letter-spacing: 6px;
+    text-align: center;
+    transition: all 0.4s ease;
+}
+
+#login-overlay #pass-input:focus {
+    border-color: #007AFF !important;
+    background: rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 0 20px rgba(0, 122, 255, 0.5);
+    outline: none;
+}
+
+#login-overlay .eye-icon {
+    position: absolute; right: 15px; top: 50%; transform: translateY(-50%);
+    cursor: pointer; opacity: 0.7;
+}
+
+#login-overlay .btn-primary {
+    background: linear-gradient(135deg, #007AFF, #0056b3);
+    border: none;
+    border-radius: 14px;
+    padding: 18px;
+    font-weight: 800;
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 10px 20px rgba(0, 122, 255, 0.3);
+}
+
+/* Animazione Shake Errore */
+.shake { animation: shake 0.4s ease-in-out; }
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-10px); }
+    75% { transform: translateX(10px); }
+}
+
+    #toast-container { position: fixed; bottom: 30px; right: 30px; z-index: 10000; }
+    .toast { background: var(--card); border: 1px solid var(--border); padding: 14px 20px; border-radius: 12px; box-shadow: var(--shadow); margin-top: 10px; animation: slideIn 0.3s ease forwards; display: flex; align-items: center; gap: 8px; }
+    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+.sidebar { 
+    width: 320px; 
+    background: rgba(255, 255, 255, 0.4) !important; 
+    backdrop-filter: blur(20px); 
+    -webkit-backdrop-filter: blur(20px);
+    border-right: 1px solid rgba(0, 0, 0, 0.05); 
+    padding: 40px 24px; 
+    position: fixed; 
+    height: 100vh; 
+    /* QUESTO RIPRISTINA LO SCORRIMENTO */
+    overflow-y: auto; 
+    z-index: 100; 
+}
+
+/* Rende la scrollbar della sidebar più sottile e moderna */
+.sidebar::-webkit-scrollbar {
+    width: 4px;
+}
+.sidebar::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+}
+    .brand-container { text-align: center; margin-bottom: 40px; padding-bottom: 25px; border-bottom: 1px solid var(--border); }
+    /* LOGO INGRANDITO */
+    .brand-logo { 
+    width: 100%; 
+    max-width: 250px; 
+    height: auto; 
+    margin-bottom: 15px; 
+    object-fit: contain; 
+    /* MODIFICHE: */
+    background: white;
+    padding: 12px;
+    border-radius: 20px; /* Angoli tondi come le card */
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05); /* Ombra leggera */
+}
+
+    .brand-name { font-size: 24px; font-weight: 800; letter-spacing: -0.8px; color: var(--text); }
+
+    .main-content { margin-left: 320px; flex: 1; padding: 50px 60px; max-width: 1400px; }
+    .card { 
+    background: rgba(255, 255, 255, 0.8); 
+    backdrop-filter: blur(10px);
+    border-radius: 24px; /* Più tondi */
+    padding: 24px; 
+    /* Ombra più morbida e professionale */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03), 0 1px 8px rgba(0, 0, 0, 0.02);
+    margin-bottom: 30px; 
+    border: 1px solid rgba(255, 255, 255, 0.5); /* Bordo luminoso */
+    animation: fadeInUp 0.4s ease-out forwards; 
+}
+    .section-title { font-size: 13px; font-weight: 600; color: var(--secondary); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 14px; display: block; }
+    
+    .saldo-valore { font-size: 42px; font-weight: 800; letter-spacing: -1.5px; margin-bottom: 40px; transition: filter 0.3s; }
+    /* PRIVACY MODE BLUR */
+    .privacy-active .hide-val { filter: blur(12px); pointer-events: none; user-select: none; }
+
+    .btn-nav { display: flex; align-items: center; width: 100%; padding: 12px 14px; border-radius: 12px; border: none; background: transparent; color: var(--text); font-size: 15px; font-weight: 500; cursor: pointer; margin-bottom: 4px; transition: all 0.2s ease; }
+    .btn-nav:hover { background: rgba(0,0,0,0.04); }
+    .btn-nav.active { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3); }
+
+    .btn-icon { background: none; border: none; cursor: pointer; padding: 6px; display: flex; align-items: center; justify-content: center; border-radius: 8px; transition: background 0.2s; }
+    .btn-icon:hover { background: rgba(0,0,0,0.08); }
+    
+    .sidebar-list-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; font-size: 14px; border-radius: 10px; margin-bottom: 4px; background: rgba(255,255,255,0.4); border: 0.5px solid var(--border); }
+    .sidebar-list-item .actions { display: flex; gap: 4px; opacity: 0; transition: opacity 0.2s; }
+    .sidebar-list-item:hover .actions { opacity: 1; }
+
+    .val-income { color: var(--success) !important; font-weight: 600; }
+    .val-expense { color: var(--danger) !important; font-weight: 600; }
+
+    .input-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+    input, select { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px; font-size: 14px; color: var(--text); outline: none; }
+    .btn-primary { background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 10px; font-weight: 600; cursor: pointer; }
+
+    .report-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .report-box { padding: 20px; border-radius: 14px; background: var(--bg); border: 1px solid var(--border); position: relative; }
+    .report-box strong { font-size: 22px; display: block; margin-top: 6px; }
+
+    table { width: 100%; border-collapse: collapse; }
+    th { text-align: left; font-size: 11px; color: var(--secondary); padding: 12px; border-bottom: 1px solid var(--border); text-transform: uppercase; }
+    td { padding: 14px 12px; font-size: 14px; border-bottom: 0.5px solid var(--border); }
+
+    #editModal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.2); backdrop-filter: blur(20px); z-index:2000; justify-content:center; align-items:center; }
+    @media (max-width: 1024px) { .sidebar { width: 100%; height: auto; position: relative; } .main-content { margin-left: 0; padding: 30px; } }
+	
+	/* Stili Tabella Previsionale */
+.budget-input { 
+    width: 120px; 
+    padding: 8px; 
+    border: 1px solid var(--border); 
+    border-radius: 8px; 
+    text-align: right; 
+    font-family: inherit;
+}
+.row-positive { color: var(--success); font-weight: 600; } /* Margine positivo */
+.row-negative { color: var(--danger); font-weight: 600; }  /* Margine negativo */
+.budget-table th { background: var(--bg); position: sticky; top: 0; }
+
+/* Progress Bar per Obiettivi */
+.progress-bar-bg { background: var(--bg); border-radius: 10px; height: 12px; width: 100%; margin: 10px 0; overflow: hidden; border: 1px solid var(--border); }
+.progress-bar-fill { background: var(--primary); height: 100%; transition: width 0.5s ease; }
+#container-templates::-webkit-scrollbar { display: none; } /* Nasconde scrollbar templates */	
+
+.btn-nav:hover { 
+    background: rgba(0, 122, 255, 0.1); 
+    transform: translateX(5px); /* Piccolo scorrimento al passaggio */
+}
+
+.sidebar-list-item {
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+}
+  </style>
+</head>
+<body onload="checkLogin()">
+
+<div id="login-overlay">
+  <div class="login-card">
+    <div style="margin-bottom: 30px;">
+        <img src="logo.png" alt="Lukese Financial" style="width: 100%; max-width: 280px; height: auto; object-fit: contain; margin-bottom: 10px;" id="loginLogo" onerror="this.style.display='none'; document.getElementById('loginBrandText').style.display='block';">
+        <div id="loginBrandText" class="brand-name" style="display:none; font-size: 26px;">Lukese Financial</div>
+    </div>
+    <p id="login-msg" style="color:var(--secondary); font-size:14px; margin-bottom:20px">Benvenuto. Inserisci la password per accedere.</p>
+    <input type="password" id="pass-input" placeholder="••••" style="width:100%; text-align:center; font-size:24px; margin-bottom:20px; letter-spacing: 4px;">
+    <button onclick="validaPassword()" class="btn-primary" style="width:100%; padding: 16px;">Sblocca Lukese Financial</button>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<!-- MODALE DI MODIFICA -->
+<div id="editModal">
+  <div class="card" style="width: 420px;">
+    <span class="section-title">Modifica Operazione</span>
+    <input type="hidden" id="editIdx">
+    <div style="display:flex; flex-direction:column; gap:14px">
+      <select id="editTipo"><option value="spesa">Uscita</option><option value="entrata">Entrata</option></select>
+      <select id="editDescrizione"></select>
+      <select id="editBanca"></select>
+      <input type="number" id="editImporto" step="0.01">
+      <input type="date" id="editData">
+      <input type="text" id="editNote" placeholder="Note">
+      <div style="display:flex; gap:12px; margin-top:10px">
+        <button onclick="salvaModifica()" class="btn-primary" style="flex:2">Salva modifiche</button>
+        <button onclick="chiudiModal()" style="flex:1; background:none; border:none; color:var(--secondary); font-weight:600; cursor:pointer;">Chiudi</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<aside class="sidebar">
+  <div class="brand-container">
+    <img src="logo.png" alt="Lukese Financial" class="brand-logo" id="mainLogo" onerror="this.style.display='none'; document.getElementById('brandText').style.display='block';">
+    <div id="brandText" class="brand-name" style="display:none">Lukese Financial</div>
+  </div>
+
+  <span class="section-title">Menu Principale</span>
+  <nav style="margin-bottom: 30px;">
+    <button class="btn-nav active" onclick="mostraPagina('dashboard', this)">🏠 Dashboard</button>
+    <button class="btn-nav" onclick="mostraPagina('report', this)">📂 Storico Mensile</button>
+	<button class="btn-nav" onclick="mostraPagina('calendario', this)">📅 Calendario Finanziario</button>
+    <button class="btn-nav" onclick="mostraPagina('analisi', this)">📈 Analisi Avanzata</button>
+	<button class="btn-nav" onclick="mostraPagina('ricerca-cat', this)">🔍 Analisi Categorie e Banche</button>
+    <button class="btn-nav" onclick="mostraPagina('pianificazione', this)">
+    🗓️ Scadenze & Proiezioni 
+    <span id="badge-scadenze" class="badge-alert" style="display:none">0</span>
+</button>
+	<button class="btn-nav" onclick="mostraPagina('budget', this)">📊 Previsionale e Consuntivo</button>
+    <button class="btn-nav" onclick="mostraPagina('annuale', this)">⚖️ Benchmark Anni</button>
+	<button class="btn-nav" onclick="mostraPagina('obiettivi', this)">🎯 Obiettivi di Risparmio</button>
+	<button class="btn-nav" onclick="generaWrapped()" style="background: rgba(255, 45, 85, 0.1); color: #FF2D55; margin-top: 10px; font-weight: 700;">✨ Il Mio Wrapped</button>
+  </nav>
+
+  <div style="display:flex; justify-content:space-between; align-items:center;">
+      <span class="section-title">I Tuoi Conti</span>
+   
+  <button class="btn-icon" onclick="toggleVisibilitaConti()" id="btnToggleConti" style="font-size: 14px; cursor: pointer;">👁️</button>
+        <button class="btn-icon" onclick="aggiungiBanca()" style="color:var(--primary); font-weight:bold; font-size:18px">➕</button>
+      </div>
+  </div>
+  <div id="bancheLista" style="margin-bottom: 20px;"></div>
+
+  <div style="display:flex; justify-content:space-between; align-items:center;">
+      <span class="section-title">Categorie</span>
+      
+	  <button class="btn-icon" onclick="toggleVisibilitaCategorie()" id="btnToggleCategorie" style="font-size: 14px; cursor: pointer;">👁️</button>
+     <button class="btn-icon" onclick="aggiungiCategoria()" style="color:var(--primary); font-weight:bold; font-size:18px">➕</button>
+      </div>
+  </div>
+  <div id="categorieLista" style="max-height: 150px; overflow-y: auto;"></div>
+
+
+  <div style="margin-top:30px; padding-top:20px; border-top: 1px solid var(--border);">
+    <button onclick="togglePrivacy()" class="btn-nav" style="color:var(--warning)">👁️ Privacy Mode (On/Off)</button>
+    <button onclick="toggleTheme()" class="btn-nav">🌓 Cambia Aspetto</button>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-top:10px">
+        <button onclick="esportaCSV()" style="font-size:11px; padding:8px; border:none; background:var(--border); border-radius:8px; cursor:pointer;">Export CSV</button>
+        <button onclick="salvaBackup()" style="font-size:11px; padding:8px; border:none; background:var(--border); border-radius:8px; cursor:pointer;">Backup</button>
+    </div>
+    <button onclick="archiviaDati()" style="width:100%; font-size:10px; margin-top:10px; border:none; background:none; color:var(--warning); cursor:pointer;">📦 Archivia Anni Precedenti</button>
+    <button onclick="document.getElementById('fileInput').click()" style="width:100%; font-size:10px; margin-top:4px; border:none; background:none; color:var(--secondary); cursor:pointer;">📂 Carica Backup</button>
+    <input type="file" id="fileInput" style="display:none" onchange="caricaBackup(event)">
+  </div>
+</aside>
+
+<main class="main-content">
+<!-- DASHBOARD -->
+<div id="sezione-dashboard">
+    <div class="card hero-card">
+    <span class="section-title" style="color: rgba(255,255,255,0.8) !important;">Patrimonio Complessivo</span>
+    <div class="saldo-valore hide-val" id="saldo" style="color: white !important;">€ 0,00</div>
+</div>
+<div id="widget-autonomia" class="card autonomy-card" style="display: none;">
+    <div class="autonomy-icon">🛡️</div>
+    <div style="display: flex; flex-direction: column;">
+        <span style="font-size: 14px; color: var(--text); opacity: 0.8;">Con i tuoi risparmi attuali, puoi mantenere il tuo stile di vita per:</span>
+        <span class="autonomy-days hide-val" id="autonomia-valore">--- giorni</span>
+        <span style="font-size: 10px; color: var(--secondary); margin-top: 4px;">Analisi basata sulla spesa media reale degli ultimi 6 mesi</span>
+    </div>
+</div>
+<div class="dashboard-middle-row">
+    <!-- WIDGET VELOCITY -->
+    <div id="widget-velocity" class="card velocity-card">
+        <div style="display:flex; justify-content:space-between; align-items:center">
+            <span class="section-title" style="margin:0">Spending Velocity</span>
+            <span id="velocity-status" style="font-size:12px; font-weight:700">Analisi...</span>
+        </div>
+        <div style="font-size:14px; color:var(--text); opacity:0.8">Rispetto allo stesso giorno del mese scorso:</div>
+      <div id="velocity-percentage" class="hide-val" style="font-size:26px; font-weight:800">0%</div>
+        <div class="velocity-bar-bg"><div id="velocity-bar" class="velocity-bar-fill"></div></div>
+    </div>
+
+    <!-- SMART INSIGHTS -->
+    <div id="smart-insights-area">
+        <span class="section-title">Smart Financial Insights</span>
+        <!-- Questo div conterrà i banner rossi/verdi -->
+        <div id="insights-list" style="display:grid; grid-template-columns: 1fr; gap:10px"></div>
+    </div>
+</div>
+
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px">
+        <span class="section-title" style="margin:0">Riepilogo del Periodo</span>
+        <div style="display:flex; gap:12px">
+          <input type="date" id="repDa" onchange="aggiornaReport()">
+          <input type="date" id="repA" onchange="aggiornaReport()">
+        </div>
+      </div>
+      <div class="report-grid">
+        <div class="report-box">
+          <span class="section-title">Entrate (Guadagni)</span>
+          <strong id="repEntrate" class="val-income hide-val">€ 0,00</strong>
+                  </div>
+        <div class="report-box">
+          <span class="section-title">Uscite (Spese)</span>
+         <strong id="repUscite" class="val-expense hide-val">€ 0,00</strong>
+                 </div>
+        <div class="report-box">
+          <span class="section-title">Bilancio Netto</span>
+         <strong id="repNetto" class="val-expense hide-val">€ 0,00</strong>
+        </div>
+      </div>
+    </div>
+
+<div class="card">
+  <span class="section-title">Nuova Transazione</span>
+  
+  <!-- Il contenitore ora è fuori dalla griglia e ha più spazio -->
+  <div id="container-templates" style="display: flex; gap: 10px; overflow-x: auto; padding: 10px 0; margin-bottom: 20px; border-bottom: 1px solid var(--border); min-height: 60px; align-items: center;">
+      <!-- I bottoni verranno generati qui -->
+  </div>
+
+  <div class="input-grid">
+    <select id="tipo"><option value="spesa">Uscita</option><option value="entrata">Entrata</option></select>
+    <select id="descrizione"></select>
+    <select id="banca"></select>
+    <input type="number" id="importo" placeholder="Importo €">
+    <input type="date" id="data">
+    <input type="text" id="note" placeholder="Note" style="grid-column: span 2">
+	<div style="grid-column: span 2;">
+    <div style="display: flex; gap: 10px; margin-bottom: 5px;">
+        <!-- TASTO DI ATTIVAZIONE -->
+        <button id="btnConnectAttachments" onclick="connettiCartellaAllegati()" class="btn-attach" style="background: var(--primary); color: white; border: none; flex: 1; font-weight: bold;">
+            🔑 1. Attiva Cartella Salvataggio Allegati su PC
+        </button>
+        
+        <!-- TASTO ALLEGATO -->
+        <button id="btnAttach" onclick="selezionaRicevuta()" class="btn-attach" style="flex: 1;">
+            📎 2. Allega Ricevuta
+        </button>
+    </div>
+    <div id="file-info" style="font-size:11px; color:var(--secondary); text-align:center;"></div>
+</div>
+    <button onclick="aggiungiMovimento()" class="btn-primary">Registra Movimento</button>
+  </div>
+</div>
+
+    <div class="card" style="background:none; border: 1px dashed var(--border);">
+      <span class="section-title">Giroconto (Sposta fondi tra conti)</span>
+      <div class="input-grid">
+        <select id="bancaDa"></select>
+        <select id="bancaA"></select>
+        <input type="number" id="importoGiro" placeholder="Somma da spostare €">
+        <input type="date" id="dataGiro">
+        <input type="text" id="noteGiro" placeholder="Esempio: Ricarica prepagata" style="grid-column: span 2">
+        <button onclick="eseguiGiroconto()" class="btn-primary" style="background:var(--secondary)">Esegui Giroconto</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px">
+        <span class="section-title" style="margin:0">Cronologia Operazioni</span>
+        <select id="filtroBanca" onchange="renderLista()" style="padding:8px; font-size:12px; background:var(--bg)"><option value="tutte">Tutti i conti</option></select>
+  <select id="filtroCategoria" onchange="renderLista()" style="padding:8px; font-size:12px; background:var(--bg)"><option value="tutte">Tutte le categorie</option></select>
+  <!-- NUOVO FILTRO TIPO MOVIMENTO -->
+  <select id="filtroTipoMovimento" onchange="renderLista()" style="padding:8px; font-size:12px; background:var(--bg)">
+    <option value="tutti">Tutti i movimenti</option>
+    <option value="entrata">Entrate</option>
+    <option value="spesa">Uscite</option>
+  </select>
+    <select id="filtroMovimentiTecnici" onchange="renderLista()" style="padding:8px; font-size:12px; background:var(--bg)">
+    <option value="escludi">Escludi Giroconti</option>
+    <option value="includi">Includi Giroconti</option>
+  </select>
+  <!---------------------------------->
+  <select id="limiteLista" onchange="renderLista()" style="padding:8px; font-size:12px; background:var(--bg)"><option value="20">20 op.</option><option value="50">50 op.</option><option value="all">Tutte</option></select>
+  <input type="text" id="cerca" placeholder="Cerca..." oninput="renderLista()" style="width:160px; background:var(--bg); padding:8px">
+</div>
+      </div>
+      <div id="listaMovimenti"></div>
+    </div>
+  </div>
+
+<!-- STORICO MENSILE -->
+<div id="sezione-report" style="display:none">
+    <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px">
+            <h2>Archivio Storico Mensile</h2>
+            <div style="display:flex; gap:10px">
+                <!-- Existing month input -->
+                <input type="month" id="reportMeseFilter" onchange="generaReportStorico()" value="<%= new Date().toISOString().substring(0,7) %>">
+                
+                <!-- NEW: Filtro Tipo Movimento -->
+                <select id="reportFiltroTipoMovimento" onchange="generaReportStorico()" style="padding:8px; font-size:12px; background:var(--bg)">
+                    <option value="tutti">Tutti i movimenti</option>
+                    <option value="entrata">Entrate</option>
+                    <option value="spesa">Uscite</option>
+                </select>
+                
+                <!-- NEW: Filtro Movimenti Tecnici -->
+                <select id="reportFiltroMovimentiTecnici" onchange="generaReportStorico()" style="padding:8px; font-size:12px; background:var(--bg)">
+                    <option value="escludi">Escludi Giroconti</option>
+                    <option value="includi">Includi Giroconti</option>
+                </select>
+
+                <button onclick="generaPDFReport()" class="btn-primary" style="background:var(--secondary)">📄 PDF Report Mese</button>
+                <button onclick="esportaCSVMese()" class="btn-primary" style="background:var(--secondary)">📊 CSV Mese</button>
+            </div>
+        </div>
+        <div id="containerTabellaMensile"></div>
+    </div>
+</div>
+
+  <!-- ANALISI AVANZATA -->
+  <div id="sezione-analisi" style="display:none">
+    <div style="display:grid; grid-template-columns: 1.1fr 0.9fr; gap:25px">
+        <div class="card">
+            <span class="section-title">Trend Flussi Entrate/Uscite</span>
+            <div style="max-width:320px; margin-bottom:20px; display:flex; gap:12px">
+                <input type="month" id="anMeseDa" onchange="generaGraficiAnalisi()">
+                <input type="month" id="anMeseA" onchange="generaGraficiAnalisi()">
+            </div>
+            <div style="height:350px"><canvas id="chartTrend"></canvas></div>
+        </div>
+        <div class="card">
+            <span class="section-title">Asset Allocation (Dove sono i tuoi soldi)</span>
+            <div style="height:350px"><canvas id="chartAllocation"></canvas></div>
+        </div>
+    </div>
+    <div class="card">
+        <span class="section-title">Evoluzione Patrimonio Netto</span>
+        <div style="height:350px"><canvas id="chartPatrimonio"></canvas></div>
+    </div>
+    <div class="card">
+        <span class="section-title">Distribuzione Spese Correnti</span>
+        <div style="height:350px"><canvas id="chartPie"></canvas></div>
+    </div>
+  </div>
+
+  <!-- PIANIFICAZIONE -->
+  <div id="sezione-pianificazione" style="display:none">
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:25px">
+        <div class="card">
+            <span class="section-title">Proiezione Finanziaria</span>
+            <div id="proiezione-container"></div>
+        </div>
+        <div class="card">
+            <span class="section-title">Scadenze Future</span>
+            <div class="input-grid">
+                <input type="text" id="scadNome" placeholder="Nome Scadenza">
+                <input type="number" id="scadImporto" placeholder="€">
+                <input type="date" id="scadData">
+                <button onclick="aggiungiScadenza()" class="btn-primary">Aggiungi Scadenza</button>
+            </div>
+            <div id="listaScadenze" style="margin-top:20px"></div>
+        </div>
+    </div>
+  </div>
+
+  <!-- BENCHMARK ANNI -->
+  <div id="sezione-annuale" style="display:none">
+    <div class="card">
+      <h2>Confronto Performance Anni</h2>
+      <div style="display:flex; gap:15px; margin-bottom:25px">
+        <select id="benchmarkMese" onchange="generaConfrontoAnnuale()">
+            <option value="tutto">Tutto l'anno</option>
+            <option value="01">Gennaio</option><option value="02">Febbraio</option><option value="03">Marzo</option>
+            <option value="04">Aprile</option><option value="05">Maggio</option><option value="06">Giugno</option>
+            <option value="07">Luglio</option><option value="08">Agosto</option><option value="09">Settembre</option>
+            <option value="10">Ottobre</option><option value="11">Novembre</option><option value="12">Dicembre</option>
+        </select>
+        <select id="benchmarkAnnoA" onchange="generaConfrontoAnnuale()"></select>
+        <select id="benchmarkAnnoB" onchange="generaConfrontoAnnuale()"></select>
+      </div>
+      <div style="height:400px"><canvas id="chartGlobalBench"></canvas></div>
+      <div id="tabellaBenchmarkContainer" style="margin-top:30px"></div>
+    </div>
+  </div>
+  <!-- RICERCA PER CATEGORIA -->
+  <div id="sezione-ricerca-cat" style="display:none">
+    <div class="card">
+      <span class="section-title">Filtri Ricerca Avanzata</span>
+      <div class="input-grid">
+        <select id="searchCat_Categoria"><option value="tutte">Tutte le categorie</option></select>
+		<select id="searchCat_Banca"><option value="tutte">Tutti i conti</option></select>
+        <select id="searchCat_Anno"><option value="tutti">Tutti gli anni</option></select>
+        <select id="searchCat_Mese">
+            <option value="tutti">Tutti i mesi</option>
+            <option value="01">Gennaio</option><option value="02">Febbraio</option><option value="03">Marzo</option>
+            <option value="04">Aprile</option><option value="05">Maggio</option><option value="06">Giugno</option>
+            <option value="07">Luglio</option><option value="08">Agosto</option><option value="09">Settembre</option>
+            <option value="10">Ottobre</option><option value="11">Novembre</option><option value="12">Dicembre</option>
+        </select>
+        <input type="date" id="searchCat_Da">
+        <input type="date" id="searchCat_A">
+        <div style="display:flex; gap:10px; grid-column: span 2">
+            <button onclick="eseguiFiltroCategoria()" class="btn-primary" style="flex:1">Filtra Movimenti</button>
+            <button onclick="esportaPDFFiltro()" class="btn-primary" style="background:var(--secondary); flex:1">📄 Esporta PDF</button>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px">
+            <span class="section-title">Risultati Ricerca</span>
+            <div id="resCount" style="font-size:12px; font-weight:600; color:var(--primary)"></div>
+        </div>
+        <div id="containerRisultatiCat"></div>
+    </div>
+  </div>
+  <!-- SEZIONE PREVISIONALE E CONSUNTIVO -->
+<div id="sezione-budget" style="display:none">
+    <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px">
+            <h2 style="margin:0">Previsionale vs Consuntivo</h2>
+            <div style="display:flex; gap:12px; align-items:center">
+                <button id="btnConnectFolder" onclick="connettiCartellaBudget()" class="btn-primary" style="background:var(--warning); font-size:13px">📁 Sincronizza Cartella Locale</button>
+				
+<button onclick="generaPDFBudget()" class="btn-primary" style="background:var(--secondary); font-size:13px; margin-left:10px">📄 Esporta PDF Budget</button>
+                <input type="month" id="budgetMese" onchange="renderTabellaBudget()" style="width:200px">
+            </div>
+        </div>
+        <p style="font-size:12px; color:var(--secondary); margin-bottom:20px">
+            I dati previsionali vengono salvati nel file <strong>budget_previsionale.json</strong> nella cartella scelta.
+        </p>
+        <div id="containerTabellaBudget"></div>
+    </div>
+</div>
+<!-- SEZIONE OBIETTIVI -->
+  <div id="sezione-obiettivi" style="display:none">
+    <div class="card">
+        <span class="section-title">Nuovo Traguardo di Risparmio</span>
+        <div class="input-grid">
+            <input type="text" id="goalNome" placeholder="Esempio: Fondo Emergenza">
+            <input type="number" id="goalTarget" placeholder="Importo Target €">
+            <button onclick="aggiungiObiettivo()" class="btn-primary">Crea Obiettivo</button>
+        </div>
+    </div>
+    <div id="container-obiettivi" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:20px">
+        <!-- Generato da JS -->
+    </div>
+  </div>
+  <!-- SEZIONE CALENDARIO -->
+<div id="sezione-calendario" style="display:none">
+    <div class="card">
+        <div class="calendar-header">
+            <h2 id="calendar-month-year" style="margin:0">Mese Anno</h2>
+            <div style="display:flex; gap:10px">
+                <button onclick="cambiaMeseCalendario(-1)" class="btn-icon">◀</button>
+                <button onclick="cambiaMeseCalendario(1)" class="btn-icon">▶</button>
+            </div>
+        </div>
+        
+        <div class="calendar-grid" id="calendar-body">
+            <!-- Generato da JS -->
+        </div>
+
+        <!-- Box dettagli che appare al click -->
+        <div id="day-details">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px">
+                <h3 id="selected-date-text" style="margin:0">Dettagli Giorno</h3>
+                <button onclick="this.parentElement.parentElement.style.display='none'" style="background:none; border:none; color:var(--secondary); cursor:pointer">Chiudi ×</button>
+            </div>
+            <div id="day-movements-list"></div>
+        </div>
+    </div>
+</div>
+</main>
+
+<script>
+let dataCorrenteCalendario = new Date();
+
+function cambiaMeseCalendario(direzione) {
+    dataCorrenteCalendario.setMonth(dataCorrenteCalendario.getMonth() + direzione);
+    renderCalendario();
+}
+
+function cambiaMeseCalendario(direzione) {
+    dataCorrenteCalendario.setMonth(dataCorrenteCalendario.getMonth() + direzione);
+    renderCalendario();
+}
+
+function renderCalendario() {
+    const grid = document.getElementById('calendar-body');
+    const monthLabel = document.getElementById('calendar-month-year');
+    grid.innerHTML = '';
+
+    const anno = dataCorrenteCalendario.getFullYear();
+    const mese = dataCorrenteCalendario.getMonth();
+
+    const mesi = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"];
+    monthLabel.innerText = `${mesi[mese]} ${anno}`;
+
+    const giorniSettimana = ["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"];
+    giorniSettimana.forEach(g => {
+        grid.innerHTML += `<div class="calendar-day-name">${g}</div>`;
+    });
+
+    const primoGiornoMese = new Date(anno, mese, 1).getDay();
+    const offset = primoGiornoMese === 0 ? 6 : primoGiornoMese - 1;
+    const giorniNelMese = new Date(anno, mese + 1, 0).getDate();
+
+    for (let i = 0; i < offset; i++) {
+        grid.innerHTML += `<div class="calendar-day empty"></div>`;
+    }
+
+    for (let d = 1; d <= giorniNelMese; d++) {
+        const dataString = `${anno}-${String(mese + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        const movimentiGiorno = movimenti.filter(m => m.data === dataString && !isTecnico(m));
+        
+        const haEntrata = movimentiGiorno.some(m => m.tipo === 'entrata');
+        const haUscita = movimentiGiorno.some(m => m.tipo === 'spesa');
+        
+        const totaleGiorno = movimentiGiorno.reduce((acc, m) => {
+            return acc + (m.tipo === 'entrata' ? m.importo : -m.importo);
+        }, 0);
+
+        const isOggi = new Date().toISOString().split('T')[0] === dataString;
+        const coloreTotale = totaleGiorno >= 0 ? 'var(--success)' : 'var(--danger)';
+
+        grid.innerHTML += `
+            <div class="calendar-day ${isOggi ? 'today' : ''}" onclick="mostraDettagliGiorno('${dataString}')">
+                <span class="day-number">${d}</span>
+                <div class="day-indicators">
+                    ${haEntrata ? '<div class="dot dot-in"></div>' : ''}
+                    ${haUscita ? '<div class="dot dot-out"></div>' : ''}
+                </div>
+                <!-- Div per il totale giornaliero -->
+                <div class="daily-total hide-val" style="color: ${coloreTotale};">
+                    ${totaleGiorno.toLocaleString('it-IT', { minimumFractionDigits: 2, style: 'currency', currency: 'EUR' })}
+                </div>
+            </div>
+        `;
+    }
+}
+
+function mostraDettagliGiorno(data) {
+    const detailsBox = document.getElementById('day-details');
+    const listCont = document.getElementById('day-movements-list');
+    const dateText = document.getElementById('selected-date-text');
+    
+    const movs = movimenti.filter(m => m.data === data && !isTecnico(m));
+    
+    dateText.innerText = `Operazioni del ${data.split('-').reverse().join('/')}`;
+    listCont.innerHTML = '';
+
+    if (movs.length === 0) {
+        listCont.innerHTML = '<p style="color:var(--secondary)">Nessuna operazione in questa data.</p>';
+    } else {
+        movs.forEach(m => {
+            listCont.innerHTML += `
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--border)">
+                    <div>
+                        <strong>${m.descrizione}</strong><br>
+                        <small style="color:var(--secondary)">${banche.find(b=>b.id==m.banca)?.nome}</small>
+                    </div>
+                    <span class="${m.tipo==='spesa'?'val-expense':'val-income'}">
+                        ${m.tipo==='spesa'?'-':'+'} €${m.importo.toLocaleString('it-IT',{minimumFractionDigits:2})}
+                    </span>
+                </div>
+            `;
+        });
+    }
+
+    detailsBox.style.display = 'block';
+    detailsBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+let templates = JSON.parse(localStorage.getItem('templates_rapidi')) || [];
+let obiettivi = JSON.parse(localStorage.getItem('obiettivi_risparmio')) || [];
+let fileRicevutaCorrente = null;
+// --- LOGICA PREVISIONALE E FILE SYSTEM ---
+let datiPrevisionali = {}; 
+let directoryHandleBudget = null; // Gestore per la cartella delle ricevute
+
+// Connessione alla cartella locale
+async function connettiCartellaBudget() {
+    try {
+        directoryHandleBudget = await window.showDirectoryPicker({ mode: 'readwrite' });
+        const btn = document.getElementById('btnConnectFolder');
+        btn.style.background = "var(--success)";
+        btn.innerText = "✅ Cartella Connessa";
+        await caricaDatiDaFile();
+        renderTabellaBudget();
+        showToast("Cartella sincronizzata!");
+    } catch (err) {
+        console.error(err);
+        showToast("Accesso negato o annullato", "danger");
+    }
+}
+
+// Caricamento del JSON dalla cartella
+async function caricaDatiDaFile() {
+    if (!directoryHandleBudget) return;
+    try {
+        const fileHandle = await directoryHandleBudget.getFileHandle('budget_previsionale.json', { create: true });
+        const file = await fileHandle.getFile();
+        const text = await file.text();
+        if (text) datiPrevisionali = JSON.parse(text);
+    } catch (err) { console.error("Errore lettura file", err); }
+}
+
+// Salvataggio del JSON nella cartella
+async function salvaDatiSuFile() {
+    if (!directoryHandleBudget) return;
+    try {
+        const fileHandle = await directoryHandleBudget.getFileHandle('budget_previsionale.json', { create: true });
+        const writable = await fileHandle.createWritable();
+        await writable.write(JSON.stringify(datiPrevisionali, null, 2));
+        await writable.close();
+    } catch (err) { showToast("Errore salvataggio file", "danger"); }
+}
+
+// Generazione Tabella
+function renderTabellaBudget() {
+    const meseTarget = document.getElementById('budgetMese').value;
+    if (!meseTarget) return;
+
+    const container = document.getElementById('containerTabellaBudget');
+    const consuntivi = {};
+    
+    // Variabili per i totali
+    let totP = 0;
+    let totC = 0;
+
+    categorie.forEach(c => consuntivi[c] = 0);
+
+    movimenti.forEach(m => {
+        if (m.data.startsWith(meseTarget) && m.tipo === 'spesa' && !isTecnico(m)) {
+            consuntivi[m.descrizione] = (consuntivi[m.descrizione] || 0) + m.importo;
+        }
+    });
+
+    let html = `<table class="budget-table">
+        <thead>
+            <tr>
+                <th>Categoria</th>
+                <th>Previsionale (€)</th>
+                <th>Consuntivo Reale (€)</th>
+                <th>Margine (E - P)</th>
+            </tr>
+        </thead>
+        <tbody>`;
+
+    categorie.sort().forEach(cat => {
+        const effettivo = consuntivi[cat] || 0;
+        const previsionale = (datiPrevisionali[meseTarget] && datiPrevisionali[meseTarget][cat]) ? datiPrevisionali[meseTarget][cat] : 0;
+        const margine = effettivo - previsionale;
+        const classeMargine = margine > 0 ? 'row-negative' : 'row-positive';
+
+        // Somma per i totali
+        totP += previsionale;
+        totC += effettivo;
+
+        html += `
+            <tr>
+                <td><strong>${cat}</strong></td>
+                <td>
+                    <input type="number" step="0.01" class="budget-input" 
+                        value="${previsionale}" 
+                        onchange="aggiornaPrevisionale('${meseTarget}', '${cat}', this.value)">
+                </td>
+                <td class="hide-val">€ ${effettivo.toLocaleString('it-IT', {minimumFractionDigits:2})}</td>
+                <td class="${classeMargine} hide-val">
+                    ${margine > 0 ? '+' : ''}${margine.toLocaleString('it-IT', {minimumFractionDigits:2})} €
+                </td>
+            </tr>`;
+    });
+
+    // Calcolo margine totale
+    const totMargine = totC - totP;
+    const classeTotMargine = totMargine > 0 ? 'row-negative' : 'row-positive';
+
+    html += `</tbody>
+        <tfoot style="background: var(--bg); font-weight: 800; border-top: 2px solid var(--border)">
+            <tr>
+                <td style="padding: 15px">TOTALE GENERALE</td>
+                <td style="text-align: right; padding-right: 22px">€ ${totP.toLocaleString('it-IT', {minimumFractionDigits:2})}</td>
+                <td class="hide-val">€ ${totC.toLocaleString('it-IT', {minimumFractionDigits:2})}</td>
+                <td class="${classeTotMargine} hide-val" style="font-size: 15px">
+                    ${totMargine > 0 ? '+' : ''}${totMargine.toLocaleString('it-IT', {minimumFractionDigits:2})} €
+                </td>
+            </tr>
+        </tfoot>
+    </table>`;
+
+    container.innerHTML = html;
+}
+
+function aggiornaPrevisionale(mese, cat, val) {
+    if (!datiPrevisionali[mese]) datiPrevisionali[mese] = {};
+    datiPrevisionali[mese][cat] = parseFloat(val) || 0;
+    salvaDatiSuFile();
+    renderTabellaBudget();
+}
+  let movimenti = JSON.parse(localStorage.getItem('movimenti')) || [];
+  let banche = JSON.parse(localStorage.getItem('banche')) || [{id: 1, nome: "CASSA"}];
+  let categorie = JSON.parse(localStorage.getItem('categorie')) || ["💰 Stipendio", "🛒 Alimentari", "🏠 Affitto", "🍿 Svago", "🏥 Salute", "⚖️ Ripresa Saldi"];
+  let scadenze = JSON.parse(localStorage.getItem('scadenze')) || [];
+  let privacyMode = localStorage.getItem('privacy') === 'true';
+
+  let cTrend, cGlobalBench, cPie, cPatrimonio, cAllocation;
+  const ICON_EDIT_SVG = `✎`, ICON_DELETE_SVG = `🗑`;
+  const isTecnico = (m) => m.descrizione.includes('Ripresa Saldi') || m.descrizione.includes('Giroconto');
+
+  function checkLogin() { if(!localStorage.getItem('app_password')) document.getElementById('login-msg').innerText = "Imposta una password di sicurezza"; }
+  function validaPassword() {
+    const p = localStorage.getItem('app_password'), input = document.getElementById('pass-input').value;
+    if(!p || input === p) { if(!p) localStorage.setItem('app_password', input); entra(); } 
+    else showToast("Password Errata", "danger");
+  }
+  function entra() { document.getElementById('login-overlay').style.display = 'none'; init(); }
+  
+  function showToast(msg, type = "success") {
+    const container = document.getElementById('toast-container'); const t = document.createElement('div'); t.className = 'toast';
+    t.innerHTML = `<span style="color:${type==='danger'?'var(--danger)':'var(--success)'}">${type==='danger'?'X':'V'}</span> ${msg}`;
+    container.appendChild(t); setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 500); }, 3000);
+  }
+
+function salvaStatoFiltri() {
+    const filtri = {
+        filtroBanca: document.getElementById('filtroBanca').value,
+        filtroCategoria: document.getElementById('filtroCategoria').value,
+        limiteLista: document.getElementById('limiteLista').value,
+        cerca: document.getElementById('cerca').value
+        // Rimuovi 'repDa' e 'repA' da qui se vuoi che siano sempre reimpostati
+        // repDa: document.getElementById('repDa').value,
+        // repA: document.getElementById('repA').value
+    };
+    localStorage.setItem('settings_filters', JSON.stringify(filtri));
+}
+
+function init() {
+    if(localStorage.getItem('theme') === 'dark') document.body.setAttribute('data-theme', 'dark');
+    if(privacyMode) document.body.classList.add('privacy-active');
+    popolaSelect();
+    document.getElementById('data').valueAsDate = new Date();
+    document.getElementById('dataGiro').valueAsDate = new Date();
+    document.getElementById('budgetMese').value = new Date().toISOString().substring(0,7);
+
+    // Imposta SEMPRE il mese corrente per i report all'inizio,
+    // sovrascrivendo qualsiasi valore salvato precedentemente per queste specifiche date.
+    setMeseCorrente(); // <-- Mossa qui per avere la precedenza!
+
+    const salvati = JSON.parse(localStorage.getItem('settings_filters'));
+    if (salvati) {
+        // Carica altri filtri dalla localStorage se esistono
+        document.getElementById('limiteLista').value = salvati.limiteLista || "20";
+        document.getElementById('cerca').value = salvati.cerca || "";
+        // Le date (repDa, repA) sono già state impostate da setMeseCorrente(),
+        // quindi NON carichiamo salvati.repDa e salvati.repA qui per evitare sovrascritture indesiderate.
+        // document.getElementById('repDa').value = salvati.repDa; // Rimuovi o commenta questa riga
+        // document.getElementById('repA').value = salvati.repA;   // Rimuovi o commenta questa riga
+    }
+applicaPreferenzaVisibilita();
+    aggiornaUI(); // Questa funzione aggiornerà anche il report con le date appena impostate
+    controllaScadenzeScadute();
+    if(salvati) {
+        document.getElementById('filtroBanca').value = salvati.filtroBanca || "tutte";
+        document.getElementById('filtroCategoria').value = salvati.filtroCategoria || "tutte";
+        renderLista();
+    }
+  }
+function controllaScadenzeImminenti() {
+    const oggi = new Date();
+    oggi.setHours(0, 0, 0, 0); // Reset orario per confronto pulito
+    
+    const limiteFurturo = new Date();
+    limiteFurturo.setDate(oggi.getDate() + 5); // Controlla i prossimi 5 giorni
+
+    // Filtra le scadenze che cadono tra oggi e i prossimi 5 giorni
+    const scadenzeInArrivo = scadenze.filter(s => {
+        const dataScad = new Date(s.data);
+        return dataScad >= oggi && dataScad <= limiteFurturo;
+    });
+
+    const badge = document.getElementById('badge-scadenze');
+    if (scadenzeInArrivo.length > 0) {
+        badge.innerText = scadenzeInArrivo.length;
+        badge.style.display = 'inline-block';
+    } else {
+        badge.style.display = 'none';
+    }
+}
+  function aggiornaUI() {
+    localStorage.setItem('movimenti', JSON.stringify(movimenti));
+    localStorage.setItem('banche', JSON.stringify(banche));
+    localStorage.setItem('categorie', JSON.stringify(categorie));
+    localStorage.setItem('scadenze', JSON.stringify(scadenze));
+
+    const tot = movimenti.reduce((acc, m) => {
+      const b = banche.find(x => x.id == m.banca);
+      if (b && b.nome === "Transitorio") return acc;
+      return acc + (m.tipo === 'spesa' ? -m.importo : m.importo);
+    }, 0);
+ // 2. AGGIORNAMENTO DEL WIDGET AUTONOMIA 	
+	aggiornaIndiceAutonomia(tot); 
+    
+    const saldoEl = document.getElementById('saldo');
+    saldoEl.innerText = `€ ${tot.toLocaleString('it-IT', {minimumFractionDigits:2})}`;
+    saldoEl.style.color = tot >= 0 ? "var(--success)" : "var(--danger)";
+
+    popolaFiltriLista();
+    renderBanche(); 
+    renderCategorieSidebar(); 
+    renderLista(); 
+    aggiornaReport(); 
+    generaSmartInsights();
+    renderScadenze();
+    calcolaProiezione(tot);
+    salvaStatoFiltri();
+	controllaScadenzeImminenti();
+	renderTemplates();
+    if(document.getElementById('sezione-obiettivi').style.display !== 'none') renderObiettivi();
+	aggiornaSpendingVelocity();
+  }
+
+  function popolaFiltriLista() {
+    const fB = document.getElementById('filtroBanca'), fC = document.getElementById('filtroCategoria');
+    const bVal = fB.value, cVal = fC.value;
+    fB.innerHTML = '<option value="tutte">Tutti i conti</option>';
+    banche.forEach(b => fB.add(new Option(b.nome, b.id)));
+    fC.innerHTML = '<option value="tutte">Tutte le categorie</option>';
+    categorie.sort().forEach(c => fC.add(new Option(c, c)));
+    fB.value = bVal; fC.value = cVal;
+  }
+
+function renderBanche() {
+    const c = document.getElementById('bancheLista');
+    c.innerHTML = '';
+    
+    // Filtra le banche: escludi "Transitorio" e quelle con saldo zero
+    const bancheDaMostrare = banche.filter(b => {
+      // Escludi il conto "Transitorio"
+      if (b.nome === "Transitorio") return false;
+
+      // Calcola il saldo per ogni banca
+      const saldoBanca = movimenti.filter(m => m.banca == b.id)
+                                  .reduce((acc, m) => acc + (m.tipo === 'spesa' ? -m.importo : m.importo), 0);
+      
+      // Se il saldo è zero, non mostrarlo
+      return saldoBanca !== 0;
+    });
+
+    bancheDaMostrare.forEach((b, idx) => {
+      const s = movimenti.filter(m => m.banca == b.id).reduce((acc, m) => acc + (m.tipo === 'spesa' ? -m.importo : m.importo), 0);
+      c.innerHTML += `
+        <div class="sidebar-list-item">
+          <div><span>${b.nome}</span> <strong class="${s>=0?'val-income':'val-expense'} hide-val">€${s.toLocaleString('it-IT',{minimumFractionDigits:2})}</strong></div>
+          <div class="actions">
+            <button class="btn-icon" onclick="spostaBanca(${idx}, -1)">↑</button>
+            <button class="btn-icon" onclick="spostaBanca(${idx}, 1)">↓</button>
+            <button class="btn-icon" onclick="rinominaBanca(${b.id}, '${b.nome}')">${ICON_EDIT_SVG}</button>
+            <button class="btn-icon" onclick="eliminaBanca(${b.id})">${ICON_DELETE_SVG}</button>
+          </div>
+        </div>`;
+    });
+  }
+
+  function spostaBanca(i, d) { const n = i+d; if(n>=0 && n<banche.length) { [banche[i], banche[n]] = [banche[n], banche[i]]; aggiornaUI(); } }
+
+  function renderCategorieSidebar() {
+    const c = document.getElementById('categorieLista'); c.innerHTML = '';
+    categorie.sort().forEach(cat => {
+      c.innerHTML += `<div class="sidebar-list-item"><span>${cat}</span><div class="actions"><button class="btn-icon" onclick="rinominaCategoria('${cat}')">${ICON_EDIT_SVG}</button><button class="btn-icon" onclick="eliminaCategoria('${cat}')">${ICON_DELETE_SVG}</button></div></div>`;
+    });
+  }
+
+function renderLista() {
+    salvaStatoFiltri();
+    const cont = document.getElementById('listaMovimenti'); cont.innerHTML = '';
+    const term = document.getElementById('cerca').value.toLowerCase();
+    const fB = document.getElementById('filtroBanca').value;
+    const fC = document.getElementById('filtroCategoria').value;
+    const fT = document.getElementById('filtroTipoMovimento').value; 
+    const fMT = document.getElementById('filtroMovimentiTecnici').value; // <--- NUOVA LINEA: Leggi il valore del filtro movimenti tecnici
+    const lim = document.getElementById('limiteLista').value;
+
+    let f = movimenti.map((m, i) => ({...m, idx: i}))
+      .filter(m => {
+        // Logica per il filtro movimenti tecnici
+        if (fMT === 'escludi' && isTecnico(m)) { // Se è impostato su 'escludi' E il movimento è tecnico
+          return false; // Escludilo
+        }
+        // Se è 'includi' O non è tecnico, continua con gli altri filtri
+
+        const tMatch = m.descrizione.toLowerCase().includes(term) || (m.note && m.note.toLowerCase().includes(term));
+        const bMatch = fB === "tutte" || m.banca == fB;
+        const cMatch = fC === "tutte" || m.descrizione === fC;
+        const tmMatch = fT === "tutti" || m.tipo === fT; 
+        
+        return tMatch && bMatch && cMatch && tmMatch;
+      }).sort((a,b) => new Date(b.data) - new Date(a.data));
+
+    if(lim !== 'all') f = f.slice(0, parseInt(lim));
+    
+    if(f.length === 0) {
+        cont.innerHTML = `<div style="text-align:center; padding:40px; color:var(--secondary)">
+            <div style="font-size:40px; margin-bottom:10px">🔎</div>
+            <p>Nessun movimento trovato</p>
+        </div>`;
+        return;
+    }
+
+    f.forEach(m => {
+      // Nota: ho rimosso il filtro `isTecnico(m)` che avevi aggiunto prima qui,
+      // perché ora la logica è gestita dal nuovo filtro `fMT`.
+      // Puoi reintegrare l'emoji o l'indicatore per i giroconti se vuoi che siano visibili in lista,
+      // altrimenti verranno trattati come normali movimenti se inclusi.
+      const emoji = m.descrizione.split(' ')[0] || '💸'; // Se vuoi usare l'emoji per giroconto puoi fare: m.descrizione === '🔄 Giroconto' ? '🔄' : (m.descrizione.split(' ')[0] || '💸');
+      const isSpesa = m.tipo === 'spesa';
+      cont.innerHTML += `
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:16px; border-radius:16px; margin-bottom:8px; background:rgba(0,0,0,0.01); border:1px solid transparent; transition:all 0.2s" onmouseover="this.style.borderColor='var(--border)'; this.style.background='var(--card)'" onmouseout="this.style.borderColor='transparent'; this.style.background='rgba(0,0,0,0.01)'">
+        <div style="display:flex; align-items:center">
+          <div class="flow-indicator ${isSpesa?'indicator-down':'indicator-up'}">${isSpesa?'↓':'↑'}</div>
+          <div>
+            <div style="font-weight:600; font-size:15px">${m.descrizione}</div>
+            <div style="font-size:12px; color:var(--secondary)">${m.data} • ${banche.find(b=>b.id==m.banca)?.nome}</div>
+            ${m.note ? `<div style="font-size:12px; color:var(--primary); margin-top:2px; font-style:italic">${m.note}</div>` : ''}
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:20px">
+          <span class="${isSpesa?'val-expense':'val-income'} hide-val" style="font-size:16px; font-weight:700">
+            ${isSpesa?'-':'+'} €${m.importo.toLocaleString('it-IT',{minimumFractionDigits:2})}
+          </span>
+          <div style="display:flex; gap:4px">
+            ${m.ricevuta ? `<button class="btn-icon" onclick="visualizzaRicevuta(${m.idx})" title="Vedi Ricevuta" style="color:var(--primary); font-size:16px;">📄</button>` : ''}
+            <button class="btn-icon" onclick="apriModifica(${m.idx})">✎</button>
+            <button class="btn-icon" onclick="rimuovi(${m.idx})">🗑</button>
+          </div>
+        </div>
+      </div>`;
+    });
+}
+
+function generaReportStorico() {
+    const meseSelezionato = document.getElementById('reportMeseFilter').value;
+    const filtroTipo = document.getElementById('reportFiltroTipoMovimento').value;
+    const filtroTecnici = document.getElementById('reportFiltroMovimentiTecnici').value;
+
+    const d = {};
+    // Start filtering the movements based on the selected month
+    let movimentiFiltrati = movimenti.filter(m => m.data.startsWith(meseSelezionato));
+
+    // Apply "Tipo Movimento" filter
+    if (filtroTipo !== 'tutti') {
+        movimentiFiltrati = movimentiFiltrati.filter(m => m.tipo === filtroTipo);
+    }
+
+    // Apply "Movimenti Tecnici" filter
+    if (filtroTecnici === 'escludi') {
+        movimentiFiltrati = movimentiFiltrati.filter(m => !isTecnico(m));
+    }
+
+    movimentiFiltrati.forEach(m => {
+        const k = m.data.substring(0, 7);
+        if (!d[k]) d[k] = { e: 0, u: 0, items: [] };
+
+        // Ensure that the technical movements are still handled correctly for totals
+        // if they are included based on the filter.
+        if (filtroTecnici === 'includi' || !isTecnico(m)) {
+            if (m.tipo === 'entrata') d[k].e += m.importo;
+            else d[k].u += m.importo;
+        }
+        d[k].items.push(m);
+    });
+
+    let h = `<table><thead><tr><th>Mese</th><th>Entrate</th><th>Uscite</th><th>Netto</th></tr></thead><tbody>`;
+    Object.keys(d).sort().reverse().forEach(k => {
+        const n = d[k].e - d[k].u;
+        h += `<tr style="cursor:pointer" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'none' ? 'table-row' : 'none'">
+                <td><strong>📂 ${k}</strong></td>
+                <td class="val-income hide-val">+€${d[k].e.toLocaleString('it-IT', {minimumFractionDigits:2})}</td>
+                <td class="val-expense hide-val">-€${d[k].u.toLocaleString('it-IT', {minimumFractionDigits:2})}</td>
+                <td class="${n >= 0 ? 'val-income' : 'val-expense'} hide-val">€${n.toLocaleString('it-IT', {minimumFractionDigits:2})}</td>
+              </tr>
+              <tr style="display:none"><td colspan="4" style="background:rgba(0,0,0,0.02); padding:0">`;
+        d[k].items.sort((a, b) => new Date(b.data) - new Date(a.data)).forEach(item => {
+            // Apply the same filters for the detailed items within the month as well
+            if ((filtroTipo === 'tutti' || item.tipo === filtroTipo) && (filtroTecnici === 'includi' || !isTecnico(item))) {
+                h += `<div style="display:flex; justify-content:space-between; padding:10px 40px; border-bottom:0.5px solid var(--border)">
+                        <div>
+                            <div style="font-size:13px; font-weight:600">${item.descrizione}</div>
+                            <div style="font-size:11px; color:var(--secondary)">${item.data}</div>
+                            ${item.note ? `<div style="font-size:12px; color:var(--primary); font-style:italic; margin-top:2px">${item.note}</div>` : ''}
+                        </div>
+                        <strong class="${item.tipo === 'spesa' ? 'val-expense' : 'val-income'} hide-val">€${item.importo.toFixed(2)}</strong>
+                      </div>`;
+            }
+        });
+        h += `</td></tr>`;
+    });
+    document.getElementById('containerTabellaMensile').innerHTML = h + `</tbody></table>`;
+}
+
+  function generaConfrontoAnnuale() {
+    const aA = document.getElementById('benchmarkAnnoA').value;
+    const aB = document.getElementById('benchmarkAnnoB').value;
+    const mese = document.getElementById('benchmarkMese').value;
+    const tC = categorie.sort();
+    const dA = {}, dB = {};
+
+    movimenti.forEach(m => {
+        const anno = m.data.substring(0,4);
+        const mId = m.data.substring(5,7);
+        const val = m.tipo === 'entrata' ? m.importo : -m.importo;
+        if(!isTecnico(m)) {
+            if(mese === 'tutto' || mId === mese) {
+                if(anno === aA) dA[m.descrizione] = (dA[m.descrizione] || 0) + val;
+                if(anno === aB) dB[m.descrizione] = (dB[m.descrizione] || 0) + val;
+            }
+        }
+    });
+
+    if(cGlobalBench) cGlobalBench.destroy();
+    cGlobalBench = new Chart(document.getElementById('chartGlobalBench'), {
+        type: 'bar',
+        data: {
+            labels: tC,
+            datasets: [
+                { label: aA, data: tC.map(c => dA[c] || 0), backgroundColor: '#007AFF' },
+                { label: aB, data: tC.map(c => dB[c] || 0), backgroundColor: '#E5E5EA' }
+            ]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+    });
+
+    let h = `<table><thead><tr><th>Categoria</th><th>${aA}</th><th>${aB}</th><th>Delta</th></tr></thead><tbody>`;
+    tC.forEach(c => {
+        const vA = dA[c] || 0, vB = dB[c] || 0; const delta = vA - vB;
+        h += `<tr><td><strong>${c}</strong></td><td class="${vA>=0?'val-income':'val-expense'}">€${vA.toLocaleString()}</td><td class="${vB>=0?'val-income':'val-expense'}">€${vB.toLocaleString()}</td><td class="${delta>=0?'val-income':'val-expense'}">€${delta.toLocaleString()}</td></tr>`;
+    });
+    document.getElementById('tabellaBenchmarkContainer').innerHTML = h + '</tbody></table>';
+  }
+
+  async function generaPDFReport() {
+    const mese = prompt("Mese da esportare (AAAA-MM):", new Date().toISOString().substring(0,7));
+    if(!mese) return;
+    const f = movimenti.filter(m => m.data.startsWith(mese)).sort((a,b)=>new Date(a.data)-new Date(b.data));
+    if(!f.length) return alert("Nessun dato.");
+    const { jsPDF } = window.jspdf; const doc = new jsPDF();
+    doc.text(`Lukese Financial Report - ${mese}`, 14, 20);
+    const ent = f.filter(m => m.tipo==='entrata' && !isTecnico(m)).reduce((s,m)=>s+m.importo,0);
+    const usc = f.filter(m => m.tipo==='spesa' && !isTecnico(m)).reduce((s,m)=>s+m.importo,0);
+    doc.setFontSize(10); doc.text(`Entrate: €${ent.toLocaleString()} | Uscite: €${usc.toLocaleString()} | Netto: €${(ent-usc).toLocaleString()}`, 14, 30);
+    const rows = f.map(m => [m.data, m.descrizione, m.note||'-', m.tipo==='entrata'?`+€${m.importo}`:`-€${m.importo}`]);
+    doc.autoTable({ head: [['Data', 'Categoria', 'Note', 'Importo']], body: rows, startY: 40 });
+    doc.save(`Report_${mese}.pdf`);
+  }
+
+  function esportaCSVMese() {
+    const mese = prompt("Mese per CSV (AAAA-MM):", new Date().toISOString().substring(0,7));
+    if(!mese) return;
+    const f = movimenti.filter(m => m.data.startsWith(mese));
+    let csv = "Data;Categoria;Tipo;Importo;Note\n";
+    f.forEach(m => { csv += `${m.data};${m.descrizione};${m.tipo};${m.importo};${m.note||''}\n`; });
+    const b = new Blob([csv], { type: 'text/csv' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `Export_${mese}.csv`; a.click();
+  }
+
+function aggiungiMovimento() {
+    const imp = parseFloat(document.getElementById('importo').value);
+    const dat = document.getElementById('data').value;
+    
+    if (imp && dat) {
+        // Registriamo il movimento
+        movimenti.push({ 
+            tipo: document.getElementById('tipo').value, 
+            descrizione: document.getElementById('descrizione').value, 
+            banca: document.getElementById('banca').value, 
+            importo: imp, 
+            data: dat, 
+            note: document.getElementById('note').value, 
+            // Salviamo il nome del file generato nella cartella locale
+            ricevuta: fileRicevutaCorrente 
+        });
+
+        // Aggiorniamo l'interfaccia
+        aggiornaUI(); 
+
+        // Pulizia campi input
+        document.getElementById('importo').value = ''; 
+        document.getElementById('note').value = '';
+        
+        // --- RESET PULSANTE ALLEGATI ---
+        fileRicevutaCorrente = null; // Svuotiamo la variabile per il prossimo movimento
+        const btnAttach = document.getElementById('btnAttach');
+        btnAttach.classList.remove('active'); // Toglie il colore verde
+        btnAttach.innerText = "📎 Allega Ricevuta (Scontrino/PDF)";
+        document.getElementById('file-info').innerText = ""; // Toglie il nome del file dal testo sotto
+
+        showToast("Movimento registrato e file salvato!");
+    } else {
+        showToast("Inserisci almeno importo e data", "danger");
+    }
+}
+
+  function eseguiGiroconto() {
+    const da = document.getElementById('bancaDa').value, a = document.getElementById('bancaA').value, imp = parseFloat(document.getElementById('importoGiro').value), dat = document.getElementById('dataGiro').value;
+    if(imp && da !== a && dat) {
+      movimenti.push({ tipo:'spesa', descrizione:'🔄 Giroconto', banca:da, importo:imp, data:dat, note: document.getElementById('noteGiro').value });
+      movimenti.push({ tipo:'entrata', descrizione:'🔄 Giroconto', banca:a, importo:imp, data:dat, note: document.getElementById('noteGiro').value });
+      aggiornaUI(); showToast("Giroconto eseguito!");
+    }
+  }
+
+  function calcolaProiezione(saldo) {
+    const treMesiFa = new Date(); treMesiFa.setMonth(treMesiFa.getMonth() - 3);
+    const mRec = movimenti.filter(m => new Date(m.data) > treMesiFa && !isTecnico(m));
+    const med = (mRec.filter(m=>m.tipo==='entrata').reduce((s,m)=>s+m.importo,0) - mRec.filter(m=>m.tipo==='spesa').reduce((s,m)=>s+m.importo,0)) / 3;
+    document.getElementById('proiezione-container').innerHTML = `
+        <div class="report-box" style="margin-bottom:10px">Media Risparmio Reale: <strong class="${med>=0?'val-income':'val-expense'} hide-val">€${med.toFixed(2)}/mese</strong></div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
+            <div class="report-box" style="font-size:12px">Tra 1 Anno<br><strong class="hide-val">€${(saldo + med*12).toLocaleString()}</strong></div>
+            <div class="report-box" style="font-size:12px">Tra 5 Anni<br><strong class="hide-val">€${(saldo + med*60).toLocaleString()}</strong></div>
+        </div>`;
+  }
+
+  function generaGraficiAnalisi() {
+    const ctxTrend = document.getElementById('chartTrend').getContext('2d');
+    const gradientEntrate = ctxTrend.createLinearGradient(0, 0, 0, 400);
+    gradientEntrate.addColorStop(0, 'rgba(52, 199, 89, 0.4)');
+    gradientEntrate.addColorStop(1, 'rgba(52, 199, 89, 0)');
+
+    // Applica configurazione simile ai tuoi dataset Chart.js
+    // Ad esempio nel chartPatrimonio aggiungi:
+    // fill: true, backgroundColor: gradientEntrate, tension: 0.4
+    const da = document.getElementById('anMeseDa').value, a = document.getElementById('anMeseA').value;
+    const fM = movimenti.filter(m => m.data.substring(0,7) >= da && m.data.substring(0,7) <= a);
+    const md = {}; fM.forEach(m => { const k = m.data.substring(0,7); if(!md[k]) md[k]={e:0,u:0}; if(!isTecnico(m)) { if(m.tipo==='entrata') md[k].e+=m.importo; else md[k].u+=m.importo; }});
+    const lbls = Object.keys(md).sort();
+    if(cTrend) cTrend.destroy();
+    cTrend = new Chart(document.getElementById('chartTrend'), { type: 'bar', data: { labels: lbls, datasets: [{label:'Entrate', data:lbls.map(l=>md[l].e), backgroundColor:'#34C759'},{label:'Uscite', data:lbls.map(l=>md[l].u), backgroundColor:'#FF3B30'}]}, options: { responsive: true, maintainAspectRatio: false } });
+
+    const bData = banche.map(b => movimenti.filter(m => m.banca == b.id).reduce((acc, m) => acc + (m.tipo === 'spesa' ? -m.importo : m.importo), 0));
+    if(cAllocation) cAllocation.destroy();
+    cAllocation = new Chart(document.getElementById('chartAllocation'), { type: 'pie', data: { labels: banche.map(b=>b.nome), datasets: [{ data: bData, backgroundColor: ['#007AFF','#34C759','#FF9500','#FF3B30','#AF52DE'] }] }, options: { responsive: true, maintainAspectRatio: false } });
+
+    const sorted = [...movimenti].sort((a,b)=>new Date(a.data)-new Date(b.data));
+    let cur = 0; const wD = sorted.map(m=>{cur+=(m.tipo==='entrata'?m.importo:-m.importo); return {x:m.data, y:cur}});
+    if(cPatrimonio) cPatrimonio.destroy();
+    cPatrimonio = new Chart(document.getElementById('chartPatrimonio'), { type: 'line', data: { datasets: [{label:'Patrimonio €', data:wD, borderColor:'#007AFF', fill:true, tension:0.3}]}, options: { responsive: true, maintainAspectRatio: false } });
+
+    const sC = {}; movimenti.filter(m => m.data.startsWith(new Date().toISOString().substring(0,7)) && m.tipo==='spesa' && !isTecnico(m)).forEach(m => { sC[m.descrizione] = (sC[m.descrizione]||0)+m.importo; });
+    if(cPie) cPie.destroy();
+    cPie = new Chart(document.getElementById('chartPie'), { type: 'doughnut', data: { labels: Object.keys(sC), datasets: [{ data: Object.values(sC), backgroundColor: ['#007AFF','#34C759','#FF9500','#FF3B30'] }] }, options: { responsive: true, maintainAspectRatio: false } });
+  }
+
+  function apriModifica(idx) {
+    const m = movimenti[idx]; document.getElementById('editIdx').value = idx; document.getElementById('editTipo').value = m.tipo; document.getElementById('editData').value = m.data; document.getElementById('editDescrizione').value = m.descrizione; document.getElementById('editBanca').value = m.banca; document.getElementById('editImporto').value = m.importo; document.getElementById('editNote').value = m.note || ''; document.getElementById('editModal').style.display = 'flex';
+  }
+  function salvaModifica() {
+    const i = document.getElementById('editIdx').value; movimenti[i] = { tipo: document.getElementById('editTipo').value, data: document.getElementById('editData').value, descrizione: document.getElementById('editDescrizione').value, banca: document.getElementById('editBanca').value, importo: parseFloat(document.getElementById('editImporto').value), note: document.getElementById('editNote').value }; document.getElementById('editModal').style.display = 'none'; aggiornaUI();
+  }
+  function togglePrivacy() { privacyMode = !privacyMode; localStorage.setItem('privacy', privacyMode); document.body.classList.toggle('privacy-active'); }
+  function toggleTheme() { const t = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; document.body.setAttribute('data-theme', t); localStorage.setItem('theme', t); }
+function setMeseCorrente() { 
+    const d = new Date(); 
+    const anno = d.getFullYear();
+    const mese = String(d.getMonth() + 1).padStart(2, '0'); // Mese da 1 a 12
+    
+    // Imposta la data di inizio al primo giorno del mese corrente (es: 2026-02-01)
+    document.getElementById('repDa').value = `${anno}-${mese}-01`; 
+    
+    // Imposta la data di fine all'ultimo giorno del mese corrente (es: 2026-02-28)
+    const ultimoGiorno = new Date(anno, d.getMonth() + 1, 0).getDate();
+    document.getElementById('repA').value = `${anno}-${mese}-${String(ultimoGiorno).padStart(2, '0')}`; 
+}
+  function popolaSelect() {
+    const bS = [document.getElementById('banca'), document.getElementById('editBanca'), document.getElementById('bancaDa'), document.getElementById('bancaA')];
+    bS.forEach(s => { if(s) { s.innerHTML = ''; banche.forEach(b => s.add(new Option(b.nome, b.id))); } });
+    const cS = [document.getElementById('descrizione'), document.getElementById('editDescrizione')];
+    cS.forEach(s => { if(s) { s.innerHTML = ''; categorie.sort().forEach(c => s.add(new Option(c, c))); } });
+  }
+  function aggiungiBanca() { const n = prompt("Nome conto:"); if(n) { banche.push({id: Date.now(), nome: n}); popolaSelect(); aggiornaUI(); } }
+  function aggiungiCategoria() { const n = prompt("Emoji + Categoria:"); if(n) { categorie.push(n); popolaSelect(); aggiornaUI(); } }
+  function rinominaBanca(id, v) { const n = prompt("Nuovo nome:", v); if(n) { banche.find(x=>x.id==id).nome=n; popolaSelect(); aggiornaUI(); } }
+  function rinominaCategoria(v) { const n = prompt("Nuovo nome:", v); if(n) { movimenti.forEach(m=>{if(m.descrizione==v)m.descrizione=n;}); categorie[categorie.indexOf(v)]=n; popolaSelect(); aggiornaUI(); } }
+  function eliminaBanca(id) { if(confirm("Eliminare?")) { banche = banche.filter(x=>x.id!=id); popolaSelect(); aggiornaUI(); } }
+  function eliminaCategoria(v) { if(confirm("Eliminare?")) { categorie = categorie.filter(x=>x!=v); popolaSelect(); aggiornaUI(); } }
+  function rimuovi(idx) { if(confirm("Eliminare?")) { movimenti.splice(idx, 1); aggiornaUI(); } }
+  function salvaBackup() {
+    const ora = new Date(); const ts = ora.toISOString().split('T')[0] + "_" + ora.getHours().toString().padStart(2,'0') + "-" + ora.getMinutes().toString().padStart(2,'0');
+    const b = new Blob([JSON.stringify({movimenti, banche, categorie, scadenze, p: localStorage.getItem('app_password')})], { type: 'application/json' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `backup_lukese_${ts}.json`; a.click();
+  }
+  function caricaBackup(e) {
+    const f = e.target.files[0]; if(!f) return; const r = new FileReader();
+    r.onload = (ev) => { try { const d = JSON.parse(ev.target.result); movimenti = d.movimenti; banche = d.banche; categorie = d.categorie; scadenze = d.scadenze || []; aggiornaUI(); showToast("Caricato!"); } catch(x) { showToast("Errore", "danger"); } }; r.readAsText(f);
+  }
+  function archiviaDati() {
+    const a = new Date().getFullYear(); const v = movimenti.filter(m => new Date(m.data).getFullYear() < a);
+    if(v.length && confirm(`Archiviare ${v.length} movimenti passati?`)) { let arch = JSON.parse(localStorage.getItem('mov_arch')) || []; localStorage.setItem('mov_arch', JSON.stringify(arch.concat(v))); movimenti = movimenti.filter(m => new Date(m.data).getFullYear() >= a); aggiornaUI(); }
+  }
+  function mostraPagina(p, btn) {
+    document.querySelectorAll('main > div').forEach(d => d.style.display = 'none'); 
+    document.querySelectorAll('.btn-nav').forEach(b => b.classList.remove('active'));
+    document.getElementById('sezione-' + p).style.display = 'block'; 
+    if(btn) btn.classList.add('active');
+
+    if(p === 'report') generaReportStorico(); 
+    if(p === 'analisi') generaGraficiAnalisi(); 
+    if(p === 'annuale') { popolaAnniBenchmark(); generaConfrontoAnnuale(); }
+    if(p === 'budget') renderTabellaBudget();
+	if(p === 'obiettivi') renderObiettivi();
+	if(p === 'calendario') renderCalendario();
+}
+  function aggiornaReport() {
+    salvaStatoFiltri(); const da = document.getElementById('repDa').value, a = document.getElementById('repA').value;
+    const f = movimenti.filter(m => m.data >= da && m.data <= a && !isTecnico(m));
+    const ent = f.filter(m => m.tipo === 'entrata').reduce((s, m) => s + m.importo, 0);
+    const usc = f.filter(m => m.tipo === 'spesa').reduce((s, m) => s + m.importo, 0);
+    document.getElementById('repEntrate').innerText = `€ ${ent.toLocaleString()}`;
+    document.getElementById('repUscite').innerText = `€ ${usc.toLocaleString()}`;
+    const nettoEl = document.getElementById('repNetto');
+    const saldoNetto = ent - usc;
+    nettoEl.innerText = `€ ${saldoNetto.toLocaleString()}`;
+    
+    // CORREZIONE: Usiamo classList per non cancellare la classe "hide-val"
+    nettoEl.classList.remove('val-income', 'val-expense');
+    nettoEl.classList.add(saldoNetto >= 0 ? 'val-income' : 'val-expense');
+    nettoEl.classList.add('hide-val'); // Riapplica sempre la protezione
+  }
+  function generaSmartInsights() {
+    const container = document.getElementById('insights-list'); container.innerHTML = '';
+    const mCorrenti = movimenti.filter(m => m.data.startsWith(new Date().toISOString().substring(0, 7)));
+    const ent = mCorrenti.filter(m => m.tipo === 'entrata' && !isTecnico(m)).reduce((s,m)=>s+m.importo, 0), usc = mCorrenti.filter(m => m.tipo === 'spesa' && !isTecnico(m)).reduce((s,m)=>s+m.importo, 0);
+    if(ent > 0) { const rate = ((ent - usc) / ent) * 100; if(rate > 20) addInsight(`Risparmio del ${rate.toFixed(1)}% questo mese.`, 'pos', '⭐'); else if(rate < 0) addInsight(`In passivo di €${Math.abs(ent-usc).toFixed(2)}.`, 'dan', '⚠️'); }
+  }
+function addInsight(testo, tipo, icona) { 
+    document.getElementById('insights-list').innerHTML += `
+        <div class="insight-pill insight-${tipo}">
+            <span>${icona}</span> 
+            <span class="hide-val">${testo}</span> <!-- Aggiunto hide-val qui -->
+        </div>`; 
+}
+  function popolaAnniBenchmark() { const anni = [...new Set(movimenti.map(m => m.data.substring(0,4)))].sort().reverse(); const sA = document.getElementById('benchmarkAnnoA'), sB = document.getElementById('benchmarkAnnoB'); sA.innerHTML = ''; sB.innerHTML = ''; anni.forEach(a => { sA.add(new Option(a, a)); sB.add(new Option(a, a)); }); }
+  function salvaStatoFiltri() {} // Placeholder
+  function chiudiModal() { document.getElementById('editModal').style.display = 'none'; }
+  function aggiungiScadenza() {
+    const n = document.getElementById('scadNome').value, i = parseFloat(document.getElementById('scadImporto').value), d = document.getElementById('scadData').value;
+    if(n && i && d) { scadenze.push({nome: n, importo: i, data: d}); aggiornaUI(); }
+  }
+ function renderScadenze() {
+    const c = document.getElementById('listaScadenze'); c.innerHTML = '';
+    const oggi = new Date();
+    oggi.setHours(0,0,0,0);
+
+    scadenze.sort((a,b) => new Date(a.data) - new Date(b.data)).forEach((s, idx) => {
+        const dataScad = new Date(s.data);
+        const g = Math.ceil((dataScad - oggi) / (1000 * 60 * 60 * 24));
+        
+        // Determina se è scaduta
+        const èScaduta = dataScad < oggi;
+        const stileScaduta = èScaduta ? 'border-left: 4px solid var(--danger); background: rgba(255, 59, 48, 0.05);' : '';
+        const testoGiorni = èScaduta ? `<span style="color:var(--danger); font-weight:bold">SCADUTA</span>` : `Tra ${g}gg`;
+
+        c.innerHTML += `
+        <div class="sidebar-list-item" style="${stileScaduta}">
+          <div>
+            <strong>${s.nome}</strong><br>
+            <small>${testoGiorni}</small>
+          </div>
+          <div style="text-align:right">
+            <span style="${èScaduta ? 'color:var(--danger); font-weight:bold' : ''}">€${s.importo.toLocaleString()}</span><br>
+            <button onclick="scadenze.splice(${idx},1); aggiornaUI();" style="color:var(--danger); border:none; background:none; cursor:pointer; font-size:10px">Elimina</button>
+          </div>
+        </div>`;
+    });
+}
+  // AGGIUNTA: Estensione di popolaSelect per includere i filtri della nuova pagina
+  const oldPopolaSelect = popolaSelect;
+  popolaSelect = function() {
+    oldPopolaSelect(); // Esegue la funzione originale
+    
+    // Popola categorie ricerca
+    const sCat = document.getElementById('searchCat_Categoria');
+    if(sCat) {
+        sCat.innerHTML = '<option value="tutte">Tutte le categorie</option>';
+        categorie.sort().forEach(c => sCat.add(new Option(c, c)));
+    }
+    // Popola banche ricerca
+  const sBanca = document.getElementById('searchCat_Banca');
+  if(sBanca) {
+      sBanca.innerHTML = '<option value="tutte">Tutti i conti</option>';
+      banche.forEach(b => sBanca.add(new Option(b.nome, b.id)));
+  }
+    // Popola anni ricerca
+    const sAnno = document.getElementById('searchCat_Anno');
+    if(sAnno) {
+        sAnno.innerHTML = '<option value="tutti">Tutti gli anni</option>';
+        const anni = [...new Set(movimenti.map(m => m.data.substring(0,4)))].sort().reverse();
+        anni.forEach(a => sAnno.add(new Option(a, a)));
+    }
+  }
+
+function eseguiFiltroCategoria() {
+  const cat = document.getElementById('searchCat_Categoria').value;
+  const bancaFiltro = document.getElementById('searchCat_Banca').value; // Nuovo
+  const anno = document.getElementById('searchCat_Anno').value;
+  const mese = document.getElementById('searchCat_Mese').value;
+  const da = document.getElementById('searchCat_Da').value;
+  const a = document.getElementById('searchCat_A').value;
+
+  let ris = movimenti.filter(m => {
+      let ok = true;
+      if(cat !== 'tutte' && m.descrizione !== cat) ok = false;
+      if(bancaFiltro !== 'tutte' && m.banca != bancaFiltro) ok = false; // Nuovo controllo
+      if(anno !== 'tutti' && m.data.substring(0,4) !== anno) ok = false;
+      if(mese !== 'tutti' && m.data.substring(5,7) !== mese) ok = false;
+      if(da && m.data < da) ok = false;
+      if(a && m.data > a) ok = false;
+      return ok;
+  }).sort((x,y) => new Date(y.data) - new Date(x.data));
+
+    let h = `<table><thead><tr><th>Data</th><th>Banca</th><th>Note</th><th>Importo</th></tr></thead><tbody>`;
+    let totaleFiltro = 0;
+
+    ris.forEach(m => {
+        const valoreAlgebrico = m.tipo === 'entrata' ? m.importo : -m.importo;
+        totaleFiltro += valoreAlgebrico;
+
+        h += `<tr>
+          <td>${m.data}</td>
+          <td>${banche.find(b=>b.id==m.banca)?.nome || 'N/D'}</td>
+          <td style="font-size:12px; color:var(--secondary)">${m.note || '-'}</td>
+          <td class="${m.tipo==='spesa'?'val-expense':'val-income'}">
+            ${m.tipo==='spesa'?'-':'+'} € ${m.importo.toLocaleString('it-IT', {minimumFractionDigits:2})}
+          </td>
+        </tr>`;
+    });
+
+    document.getElementById('containerRisultatiCat').innerHTML = h + `</tbody></table>`;
+    
+    const colorClass = totaleFiltro >= 0 ? 'color:var(--success)' : 'color:var(--danger)';
+    document.getElementById('resCount').innerHTML = `
+        ${ris.length} operazioni — 
+        <span style="${colorClass}; font-weight:800">Totale Netto: € ${totaleFiltro.toLocaleString('it-IT', {minimumFractionDigits:2})}</span>
+    `;
+}
+
+  function renderRisultatiRicerca(lista) {
+    const cont = document.getElementById('containerRisultatiCat');
+    if(lista.length === 0) {
+        cont.innerHTML = '<p style="text-align:center; color:var(--secondary)">Nessun movimento trovato con questi filtri.</p>';
+        return;
+    }
+
+    let h = `<table><thead><tr><th>Data</th><th>Descrizione / Note</th><th>Conto</th><th>Importo</th></tr></thead><tbody>`;
+    lista.forEach(m => {
+        h += `<tr>
+                <td>${m.data}</td>
+                <td>
+                    <strong>${m.descrizione}</strong>
+                    ${m.note ? `<br><small style="color:var(--primary); font-style:italic">${m.note}</small>` : ''}
+                </td>
+                <td>${banche.find(b=>b.id==m.banca)?.nome || '-'}</td>
+                <td class="${m.tipo==='spesa'?'val-expense':'val-income'}">
+                    ${m.tipo==='spesa'?'-':'+'} €${m.importo.toLocaleString('it-IT',{minimumFractionDigits:2})}
+                </td>
+              </tr>`;
+    });
+    cont.innerHTML = h + `</tbody></table>`;
+  }
+
+ function esportaPDFFiltro() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    // Recupero il nome della categoria selezionata
+    const selectCat = document.getElementById('searchCat_Categoria');
+    const nomeCategoria = selectCat.options[selectCat.selectedIndex].text;
+    
+    const titolo = `Analisi Categoria: ${nomeCategoria}`;
+    
+    doc.setFontSize(16);
+    doc.text(titolo, 10, 15);
+    doc.setFontSize(10);
+    doc.text(`Generato il: ${new Date().toLocaleDateString()} - Totale calcolato sui movimenti filtrati`, 10, 22);
+
+    const rows = [];
+    let totalePDF = 0;
+
+    const righeTabella = document.querySelectorAll("#containerRisultatiCat tbody tr");
+    
+    righeTabella.forEach(tr => {
+        const tds = tr.querySelectorAll("td");
+        const data = tds[0].innerText;
+        const banca = tds[1].innerText;
+        const note = tds[2].innerText;
+        const importoTesto = tds[3].innerText; // Es: "- € 1.250,00"
+
+        // LOGICA DI PARSING CORRETTA: 
+        // 1. Rimuovo € e spazi
+        let pulito = importoTesto.replace('€', '').replace(/\s/g, '');
+        // 2. Rimuovo il punto delle migliaia (se presente) e cambio la virgola in punto
+        pulito = pulito.replace(/\./g, '').replace(',', '.');
+        
+        const valoreNumerico = parseFloat(pulito);
+        if (!isNaN(valoreNumerico)) {
+            totalePDF += valoreNumerico;
+        }
+
+        rows.push([data, banca, note, importoTesto]);
+    });
+
+    // Aggiungo la riga del totale in fondo alla tabella del PDF
+    rows.push([
+        { content: 'TOTALE NETTO', colSpan: 3, styles: { halign: 'right', fontStyle: 'bold', fillColor: [240, 240, 240] } },
+        { content: `€ ${totalePDF.toLocaleString('it-IT', {minimumFractionDigits:2})}`, styles: { fontStyle: 'bold', fillColor: [240, 240, 240] } }
+    ]);
+
+    doc.autoTable({
+        startY: 30,
+        head: [['Data', 'Conto', 'Note', 'Importo']],
+        body: rows,
+        theme: 'striped',
+        headStyles: { fillColor: [0, 122, 255] },
+        styles: { fontSize: 9 }
+    });
+
+    // Salva il file con il nome della categoria
+    const nomeFile = `Analisi_${nomeCategoria.replace(/\s+/g, '_')}_${new Date().getTime()}.pdf`;
+    doc.save(nomeFile);
+}
+function generaPDFBudget() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const meseTarget = document.getElementById('budgetMese').value;
+    
+    if(!meseTarget) return alert("Seleziona un mese");
+
+    doc.setFontSize(18);
+    doc.text(`Report Previsionale: ${meseTarget}`, 14, 20);
+    doc.setFontSize(10);
+    doc.text(`Lukese Financial - Generato il ${new Date().toLocaleDateString()}`, 14, 28);
+
+    const rows = [];
+    let tP = 0, tC = 0;
+
+    categorie.sort().forEach(cat => {
+        const cons = movimenti.filter(m => m.data.startsWith(meseTarget) && m.tipo === 'spesa' && m.descrizione === cat && !isTecnico(m))
+                              .reduce((s, m) => s + m.importo, 0);
+        const prev = (datiPrevisionali[meseTarget] && datiPrevisionali[meseTarget][cat]) ? datiPrevisionali[meseTarget][cat] : 0;
+        const marg = cons - prev;
+        
+        tP += prev;
+        tC += cons;
+
+        rows.push([
+            cat, 
+            `€ ${prev.toFixed(2)}`, 
+            `€ ${cons.toFixed(2)}`, 
+            `${marg > 0 ? '+' : ''}${marg.toFixed(2)} €`
+        ]);
+    });
+
+    // Riga dei totali per il PDF
+    rows.push([
+        { content: 'TOTALE', styles: { fontStyle: 'bold', fillColor: [240, 240, 240] } },
+        { content: `€ ${tP.toFixed(2)}`, styles: { fontStyle: 'bold', fillColor: [240, 240, 240] } },
+        { content: `€ ${tC.toFixed(2)}`, styles: { fontStyle: 'bold', fillColor: [240, 240, 240] } },
+        { content: `${(tC-tP).toFixed(2)} €`, styles: { fontStyle: 'bold', fillColor: [240, 240, 240] } }
+    ]);
+
+    doc.autoTable({
+        head: [['Categoria', 'Previsionale', 'Consuntivo', 'Margine']],
+        body: rows,
+        startY: 35,
+        theme: 'striped',
+        headStyles: { fillColor: [0, 122, 255] },
+        didParseCell: function(data) {
+            // Colora il margine nel PDF (Rosso se positivo = spesa extra)
+            if (data.column.index === 3 && data.section === 'body') {
+                const valStr = data.cell.text[0];
+                if (valStr.startsWith('+')) data.cell.styles.textColor = [255, 59, 48];
+                else if (valStr.includes('-')) data.cell.styles.textColor = [52, 199, 89];
+            }
+        }
+    });
+
+    doc.save(`Budget_Lukese_${meseTarget}.pdf`);
+}
+function controllaScadenzeScadute() {
+    const oggi = new Date();
+    oggi.setHours(0, 0, 0, 0);
+
+    // Filtra le scadenze la cui data è minore di oggi
+    const scadute = scadenze.filter(s => {
+        const dataScad = new Date(s.data);
+        return dataScad < oggi;
+    });
+
+    if (scadute.length > 0) {
+        // Creiamo un messaggio riassuntivo
+        let elencoScadute = scadute.map(s => `${s.nome} (${s.data})`).join(", ");
+        
+        // Usiamo un alert o un toast persistente
+        setTimeout(() => {
+            alert(`⚠️ ATTENZIONE: Hai ${scadute.length} scadenze SCADUTE e non ancora gestite: \n\n${elencoScadute.replace(/, /g, '\n')}`);
+        }, 1000); // Ritardo di 1 secondo per permettere il caricamento della dashboard
+    }
+}
+// --- LOGICA TEMPLATES RAPIDI ---
+function aggiungiTemplateCorrente() {
+    const t = {
+        id: Date.now(),
+        tipo: document.getElementById('tipo').value,
+        desc: document.getElementById('descrizione').value,
+        banca: document.getElementById('banca').value,
+        importo: parseFloat(document.getElementById('importo').value) || 0,
+        note: document.getElementById('note').value
+    };
+    if(!t.importo) return showToast("Inserisci un importo", "danger");
+    templates.push(t);
+    localStorage.setItem('templates_rapidi', JSON.stringify(templates));
+    renderTemplates();
+    showToast("Modello salvato!");
+}
+
+function usaTemplate(id) {
+    const t = templates.find(x => x.id === id);
+    if(!t) return;
+    document.getElementById('tipo').value = t.tipo;
+    document.getElementById('descrizione').value = t.desc;
+    document.getElementById('banca').value = t.banca;
+    document.getElementById('importo').value = t.importo;
+    document.getElementById('note').value = t.note;
+    showToast("Dati precompilati");
+}
+
+function renderTemplates() {
+    const cont = document.getElementById('container-templates');
+    if(!cont) return;
+    
+    // Svuota e aggiungi il tasto per creare nuovi modelli
+    cont.innerHTML = `<button class="btn-add-template" onclick="aggiungiTemplateCorrente()">+ Nuovo Modello</button>`;
+    
+    templates.forEach(t => {
+        // Estraiamo l'emoji se presente nella categoria (es. "🛒 Alimentari" -> "🛒")
+        const emoji = t.desc.split(' ')[0] || '📝';
+        const nomePulito = t.desc.replace(emoji, '').trim() || "Modello";
+        
+        // Creiamo il pulsante
+        cont.innerHTML += `
+        <div class="template-pill" onclick="usaTemplate(${t.id})">
+            <span>${emoji}</span>
+            <span>${nomePulito} <b>€${t.importo.toLocaleString('it-IT', {minimumFractionDigits:2})}</b></span>
+            <div class="template-delete" onclick="event.stopPropagation(); rimuoviTemplate(${t.id})">×</div>
+        </div>`;
+    });
+}
+
+function rimuoviTemplate(id) {
+    templates = templates.filter(x => x.id !== id);
+    localStorage.setItem('templates_rapidi', JSON.stringify(templates));
+    renderTemplates();
+}
+
+// --- LOGICA OBIETTIVI ---
+function aggiungiObiettivo() {
+    const nome = document.getElementById('goalNome').value;
+    const target = parseFloat(document.getElementById('goalTarget').value);
+    if(nome && target) {
+        obiettivi.push({ id: Date.now(), nome, target });
+        localStorage.setItem('obiettivi_risparmio', JSON.stringify(obiettivi));
+        renderObiettivi();
+        document.getElementById('goalNome').value = '';
+        document.getElementById('goalTarget').value = '';
+    }
+}
+
+function renderObiettivi() {
+    const cont = document.getElementById('container-obiettivi');
+    if(!cont) return;
+    cont.innerHTML = '';
+    
+    // Patrimonio Reale
+    const patrimonio = movimenti.reduce((acc, m) => acc + (m.tipo === 'spesa' ? -m.importo : m.importo), 0);
+    
+    // Calcolo Risparmio Medio ultimi 3 mesi
+    const treMesiFa = new Date(); treMesiFa.setMonth(treMesiFa.getMonth() - 3);
+    const mRec = movimenti.filter(m => new Date(m.data) > treMesiFa && !isTecnico(m));
+    const risparmioMedio = (mRec.filter(m=>m.tipo==='entrata').reduce((s,m)=>s+m.importo,0) - mRec.filter(m=>m.tipo==='spesa').reduce((s,m)=>s+m.importo,0)) / 3;
+
+    obiettivi.forEach(g => {
+        const perc = Math.min((patrimonio / g.target) * 100, 100).toFixed(1);
+        const mancano = Math.max(g.target - patrimonio, 0);
+        const mesiStimati = (risparmioMedio > 0) ? Math.ceil(mancano / risparmioMedio) : '∞';
+
+        cont.innerHTML += `
+        <div class="card" style="border-top: 4px solid var(--primary)">
+            <div style="display:flex; justify-content:space-between; align-items:center">
+                <strong style="font-size:16px">${g.nome}</strong>
+                <button onclick="rimuoviObiettivo(${g.id})" style="border:none; background:none; color:var(--danger); cursor:pointer; font-size:18px">🗑</button>
+            </div>
+            <div style="font-size:26px; font-weight:800; margin:15px 0" class="hide-val">€ ${patrimonio.toLocaleString()} <span style="font-size:14px; color:var(--secondary); font-weight:400">/ € ${g.target.toLocaleString()}</span></div>
+            <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${perc}%"></div></div>
+            <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--secondary)">
+                <span>${perc}% raggiunto</span>
+                <span>Stima: <strong>${mesiStimati} mesi</strong></span>
+            </div>
+        </div>`;
+    });
+}
+
+function rimuoviObiettivo(id) {
+    if(confirm("Eliminare questo obiettivo?")) {
+        obiettivi = obiettivi.filter(x => x.id !== id);
+        localStorage.setItem('obiettivi_risparmio', JSON.stringify(obiettivi));
+        renderObiettivi();
+    }
+}
+function aggiornaIndiceAutonomia(saldoTotale) {
+    const widget = document.getElementById('widget-autonomia');
+    const displayValore = document.getElementById('autonomia-valore');
+
+    if (!widget || saldoTotale <= 0) {
+        if(widget) widget.style.display = 'none';
+        return;
+    }
+
+    // 1. Analisi ultimi 180 giorni (6 mesi)
+    const giorniAnalisi = 180;
+    const dataLimite = new Date();
+    dataLimite.setDate(dataLimite.getDate() - giorniAnalisi);
+
+    // 2. Filtriamo le USCITE REALI (no giroconti, no saldi tecnici)
+    const uscitePeriodo = movimenti.filter(m => {
+        const dataMov = new Date(m.data);
+        return m.tipo === 'spesa' && !isTecnico(m) && dataMov >= dataLimite;
+    });
+
+    const totaleSpeso = uscitePeriodo.reduce((acc, m) => acc + m.importo, 0);
+
+    // 3. Spesa media giornaliera
+    const spesaMediaGiornaliera = totaleSpeso / giorniAnalisi;
+
+    if (spesaMediaGiornaliera <= 0) {
+        displayValore.innerText = "Sicurezza totale (nessuna spesa rilevata)";
+        widget.style.display = 'flex';
+        return;
+    }
+
+    // 4. Calcolo giorni: Patrimonio / Media Spesa
+    const giorniAutonomia = Math.floor(saldoTotale / spesaMediaGiornaliera);
+
+    // 5. Visualizzazione
+    if (giorniAutonomia > 0) {
+        displayValore.innerText = `${giorniAutonomia.toLocaleString()} giorni senza lavorare`;
+        widget.style.display = 'flex';
+    } else {
+        widget.style.display = 'none';
+    }
+}
+function aggiornaSpendingVelocity() {
+    const oggi = new Date();
+    const giornoAttuale = oggi.getDate();
+    const meseCorrenteStr = oggi.toISOString().substring(0, 7);
+    const meseScorsoData = new Date();
+    meseScorsoData.setMonth(oggi.getMonth() - 1);
+    const meseScorsoStr = meseScorsoData.toISOString().substring(0, 7);
+
+    const spesaMeseCorrente = movimenti.filter(m => m.data.startsWith(meseCorrenteStr) && m.tipo === 'spesa' && !isTecnico(m) && new Date(m.data).getDate() <= giornoAttuale).reduce((s, m) => s + m.importo, 0);
+    const spesaMeseScorso = movimenti.filter(m => m.data.startsWith(meseScorsoStr) && m.tipo === 'spesa' && !isTecnico(m) && new Date(m.data).getDate() <= giornoAttuale).reduce((s, m) => s + m.importo, 0);
+
+    const percEl = document.getElementById('velocity-percentage');
+    const barEl = document.getElementById('velocity-bar');
+    const statusEl = document.getElementById('velocity-status');
+
+    if (spesaMeseScorso <= 0) { statusEl.innerText = "Dati insufficienti"; return; }
+
+    const diffPerc = ((spesaMeseCorrente - spesaMeseScorso) / spesaMeseScorso) * 100;
+    percEl.innerText = `${diffPerc > 0 ? '+' : ''}${diffPerc.toFixed(1)}%`;
+    
+    if (diffPerc <= 0) {
+        statusEl.innerText = "OTTIMA VELOCITÀ 🏎️"; statusEl.style.color = "var(--success)";
+        barEl.style.width = "30%"; barEl.style.backgroundColor = "var(--success)";
+    } else {
+        statusEl.innerText = "VELOCITÀ ELEVATA ⚠️"; statusEl.style.color = "var(--danger)";
+        barEl.style.width = Math.min(diffPerc + 30, 100) + "%"; barEl.style.backgroundColor = "var(--danger)";
+    }
+}
+
+function generaWrapped() {
+    const overlay = document.getElementById('wrapped-overlay');
+    const container = document.getElementById('wrapped-stats-container');
+    const meseCorrente = new Date().toISOString().substring(0, 7);
+    // Filtra i movimenti tecnici anche qui
+    const movs = movimenti.filter(m => m.data.startsWith(meseCorrente) && !isTecnico(m)); // <--- Modifica questa riga
+    
+    if(movs.length < 3) return alert("Registra più movimenti per sbloccare il Wrapped!");
+
+    const catStats = {};
+    movs.filter(m => m.tipo === 'spesa').forEach(m => catStats[m.descrizione] = (catStats[m.descrizione] || 0) + m.importo);
+    const topCat = Object.keys(catStats).reduce((a, b) => catStats[a] > catStats[b] ? a : b, "Nessuna");
+
+    const entrate = movs.filter(m => m.tipo === 'entrata').reduce((s, m) => s + m.importo, 0);
+    const uscite = movs.filter(m => m.tipo === 'spesa').reduce((s, m) => s + m.importo, 0);
+    const score = entrate > 0 ? Math.round(((entrate - uscite) / entrate) * 100) : 0;
+
+    container.innerHTML = `
+        <div class="wrapped-stat-card"><h3>CATEGORIA REGINA</h3><h2>${topCat}</h2></div>
+        <div class="wrapped-stat-card"><h3>RISPARMIO NETTO</h3><h2 style="font-size:40px">${score}%</h2><p>${score > 20 ? 'Campione di risparmio!' : 'Puoi fare di meglio!'}</p></div>
+        <div class="wrapped-stat-card"><h3>USCITE TOTALI</h3><h2>€ ${uscite.toLocaleString()}</h2></div>
+    `;
+    overlay.style.display = 'flex';
+}
+
+/// 1. Funzione per connettere la cartella fisica
+async function connettiCartellaAllegati() {
+    try {
+        directoryHandleAllegati = await window.showDirectoryPicker({ mode: 'readwrite' });
+        const btn = document.getElementById('btnConnectAttachments');
+        
+        // Diventa verde quando è attivo
+        btn.style.background = "var(--success)";
+        btn.innerText = "✅ Cartella PC Attiva";
+        
+        showToast("Cartella allegati pronta per l'uso!");
+    } catch (err) {
+        console.error(err);
+        showToast("Accesso negato", "danger");
+    }
+}
+// 2. Modifica della funzione per selezionare e SALVARE il file fisicamente
+async function selezionaRicevuta() {
+    if (!directoryHandleAllegati) {
+        alert("Per favore, clicca prima su 'Collega Cartella Allegati' per autorizzare il salvataggio sul tuo PC.");
+        return;
+    }
+
+    try {
+        // Apre la finestra di selezione file
+        const [fileHandle] = await window.showOpenFilePicker({
+            types: [{
+                description: 'Ricevute (Immagini e PDF)',
+                accept: { 'image/*': ['.png', '.jpg', '.jpeg'], 'application/pdf': ['.pdf'] }
+            }],
+            multiple: false
+        });
+
+        const file = await fileHandle.getFile();
+        
+        // Creiamo un nome file unico: DATA_ORA_NOMEORIGINALE.estensione
+        const nomeFileUnico = Date.now() + "_" + file.name.replace(/\s/g, '_');
+
+        // Salvataggio fisico nella cartella locale
+        const nuovoFileHandle = await directoryHandleAllegati.getFileHandle(nomeFileUnico, { create: true });
+        const writable = await nuovoFileHandle.createWritable();
+        await writable.write(file);
+        await writable.close();
+
+        // IMPORTANTE: Salviamo solo il NOME del file, non tutto il file pesante
+        fileRicevutaCorrente = nomeFileUnico;
+
+        document.getElementById('btnAttach').classList.add('active');
+        document.getElementById('btnAttach').innerText = "✅ File salvato in cartella";
+        document.getElementById('file-info').innerText = "Salvato come: " + nomeFileUnico;
+        showToast("Copia creata in locale!");
+
+    } catch (err) {
+        console.error(err);
+        if(err.name !== 'AbortError') showToast("Errore nel salvataggio", "danger");
+    }
+}
+
+// 3. Modifica della funzione per visualizzare l'allegato pescando dalla cartella
+async function visualizzaRicevuta(originalIdx) {
+    // Recuperiamo il movimento usando l'indice originale dell'array
+    const m = movimenti[originalIdx];
+
+    if (!m || !m.ricevuta) {
+        showToast("Nessun allegato trovato", "danger");
+        return;
+    }
+
+    // CONTROLLO PERMESSI: Se la variabile è vuota, l'utente non ha cliccato il tasto "Attiva"
+    if (!directoryHandleAllegati) {
+        alert("⚠️ CARTELLA NON ATTIVA\n\nPer visualizzare gli allegati devi prima cliccare sul pulsante verde 'Attiva Cartella PC' che trovi nel riquadro 'Nuova Transazione'.");
+        return;
+    }
+
+    try {
+        // Tentiamo di prendere il file dalla cartella locale
+        const fileHandle = await directoryHandleAllegati.getFileHandle(m.ricevuta);
+        const file = await fileHandle.getFile();
+        
+        // Creiamo l'URL per il browser
+        const fileURL = URL.createObjectURL(file);
+        
+        // Apriamo una nuova scheda
+        const win = window.open("", "_blank");
+        
+        if (!win) {
+            alert("Pop-up bloccato! Per favore autorizza i pop-up per questo sito.");
+            return;
+        }
+
+        if (file.type === "application/pdf") {
+            win.document.write(`<html><head><title>Ricevuta PDF</title></head><body style="margin:0;"><embed src="${fileURL}" type="application/pdf" width="100%" height="100%"></body></html>`);
+        } else {
+            win.document.write(`<html><head><title>Ricevuta Immagine</title></head><body style="margin:0;display:flex;justify-content:center;align-items:center;background:#1a1a1a;"><img src="${fileURL}" style="max-width:100%;max-height:100vh;box-shadow:0 0 50px rgba(0,0,0,0.5);"></body></html>`);
+        }
+    } catch (err) {
+        console.error(err);
+        alert("ERRORE: Non trovo il file '" + m.ricevuta + "' nella cartella selezionata.\n\nAssicurati di aver attivato la cartella GIUSTA (quella dove hai salvato i file).");
+    }
+}
+function toggleVisibilitaConti() {
+    const lista = document.getElementById('bancheLista');
+    const btn = document.getElementById('btnToggleConti');
+    if (lista.style.display === 'none') {
+        lista.style.display = 'block';
+        btn.innerText = '👁️';
+        localStorage.setItem('user_hide_accounts', 'false');
+    } else {
+        lista.style.display = 'none';
+        btn.innerText = '🙈';
+        localStorage.setItem('user_hide_accounts', 'true');
+    }
+}
+
+// NUOVA FUNZIONE SPECIFICA PER CATEGORIE
+function toggleVisibilitaCategorie() {
+    const lista = document.getElementById('categorieLista');
+    const btn = document.getElementById('btnToggleCategorie');
+    if (lista.style.display === 'none') {
+        lista.style.display = 'block';
+        btn.innerText = '👁️';
+        localStorage.setItem('user_hide_categories', 'false');
+    } else {
+        lista.style.display = 'none';
+        btn.innerText = '🙈';
+        localStorage.setItem('user_hide_categories', 'true');
+    }
+}
+
+// AGGIORNATA PER GESTIRE ENTRAMBI AL REFRESH
+function applicaPreferenzaVisibilita() {
+    // Gestione Conti
+    if (localStorage.getItem('user_hide_accounts') === 'true') {
+        document.getElementById('bancheLista').style.display = 'none';
+        document.getElementById('btnToggleConti').innerText = '🙈';
+    }
+    // Gestione Categorie
+    if (localStorage.getItem('user_hide_categories') === 'true') {
+        document.getElementById('categorieLista').style.display = 'none';
+        document.getElementById('btnToggleCategorie').innerText = '🙈';
+    }
+}
+</script>
+<div id="wrapped-overlay" onclick="this.style.display='none'">
+    <div class="wrapped-content">
+        <h1 style="font-size:42px; margin-bottom:20px; font-weight: 800; letter-spacing: -2px;">Il tuo mese in<br>Financial</h1>
+        <div id="wrapped-stats-container"></div>
+        <p style="opacity:0.7; font-size:13px; margin-top:20px">Tocca ovunque per chiudere</p>
+    </div>
+</div>
+</body>
+</html>
