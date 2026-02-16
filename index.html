@@ -760,6 +760,8 @@ body {
 </aside>
 
 <main class="main-content">
+<div class="sidebar-overlay" onclick="toggleSidebarMobile()"></div>
+<button id="mobile-menu-btn" onclick="toggleSidebarMobile()" style="display:none">☰ Menu</button>
 <!-- DASHBOARD -->
 <div id="sezione-dashboard">
     <div class="card hero-card">
@@ -2451,6 +2453,21 @@ function applicaPreferenzaVisibilita() {
     if (localStorage.getItem('user_hide_categories') === 'true') {
         document.getElementById('categorieLista').style.display = 'none';
         document.getElementById('btnToggleCategorie').innerText = '🙈';
+    }
+}
+function toggleSidebarMobile() {
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.querySelector('.sidebar-overlay');
+    const btn = document.getElementById('mobile-menu-btn');
+    
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('active');
+    
+    // Cambia il testo del bottone se è aperto o chiuso
+    if (sidebar.classList.contains('open')) {
+        btn.innerHTML = '✕ Chiudi';
+    } else {
+        btn.innerHTML = '☰ Menu';
     }
 }
 </script>
