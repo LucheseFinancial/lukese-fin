@@ -20,59 +20,60 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 
   <style>
-  /* --- MENU A COMPARSA PER MOBILE --- */
+/* --- SOLO LOGICA MENU A SCOMPARSA --- */
 @media (max-width: 1024px) {
+    /* Nascondiamo la sidebar originale e la rendiamo un pannello sovrapposto */
     .sidebar {
         position: fixed !important;
         top: 0;
         left: 0;
         width: 280px !important;
         height: 100vh !important;
-        transform: translateX(-100%); /* La nasconde a sinistra */
-        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        z-index: 10000 !important;
-        background: white !important; /* Colore solido per non vedere sotto */
-        box-shadow: 10px 0 30px rgba(0,0,0,0.2);
+        transform: translateX(-100%); /* Nascosta fuori dallo schermo */
+        transition: transform 0.3s ease;
+        z-index: 11000 !important;
+        background: white !important;
+        box-shadow: 15px 0 30px rgba(0,0,0,0.2);
         display: block !important;
+        margin: 0 !important;
     }
 
-    /* Quando aggiungiamo la classe "open", la sidebar scivola dentro */
+    /* Quando la sidebar ha la classe 'open', scorre dentro */
     .sidebar.open {
         transform: translateX(0);
     }
 
-    /* Il contenuto principale occupa tutto lo schermo */
+    /* Togliamo il margine sinistro al contenuto principale così occupa tutto lo schermo */
     .main-content {
         margin-left: 0 !important;
+        padding-top: 80px !important; /* Spazio per non coprire il contenuto col tasto Menu */
         width: 100% !important;
-        padding: 80px 15px 20px 15px !important;
     }
 
-    /* Il tasto Menu (Pillola blu) */
+    /* Stile del tasto Menu */
     #mobile-menu-btn {
         display: flex !important;
-        align-items: center;
-        justify-content: center;
         position: fixed;
         top: 15px;
         left: 15px;
-        z-index: 10001;
-        background: var(--primary);
+        z-index: 12000;
+        background: #007AFF;
         color: white;
         border: none;
-        padding: 12px 20px;
-        border-radius: 50px;
+        padding: 10px 20px;
+        border-radius: 12px;
         font-weight: bold;
-        box-shadow: 0 4px 15px rgba(0, 122, 255, 0.4);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        cursor: pointer;
     }
 
-    /* Sfondo scuro che appare quando il menu è aperto */
+    /* Sfondo scuro quando il menu è aperto */
     .sidebar-overlay {
         display: none;
         position: fixed;
         inset: 0;
         background: rgba(0,0,0,0.5);
-        z-index: 9999;
+        z-index: 10500;
         backdrop-filter: blur(2px);
     }
     .sidebar-overlay.active {
@@ -2519,17 +2520,14 @@ function toggleSidebarMobile() {
     const overlay = document.querySelector('.sidebar-overlay');
     const btn = document.getElementById('mobile-menu-btn');
     
-    // Attiva o disattiva le classi
     sidebar.classList.toggle('open');
     overlay.classList.toggle('active');
     
-    // Cambia il testo del bottone
+    // Cambia il testo del bottone se è aperto o chiuso
     if (sidebar.classList.contains('open')) {
         btn.innerHTML = '✕ Chiudi';
-        document.body.style.overflow = 'hidden'; // Impedisce alla pagina di scorrere sotto
     } else {
         btn.innerHTML = '☰ Menu';
-        document.body.style.overflow = 'auto'; // Riattiva lo scroll
     }
 }
 
