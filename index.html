@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <!-- Meta tag per PWA e Mobile -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -21,11 +20,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 
   <style>
-  #sezione-dashboard select, #sezione-dashboard input {
-    height: 42px; /* Uniforma l'altezza di tutti i selettori */
-    border-color: var(--border);
-    background-color: var(--bg);
-}
   /* 1. Cambia il font di base */
 body { 
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif; 
@@ -136,80 +130,12 @@ body {
 }
 
 /* Adattamento per dispositivi mobili (li mette uno sopra l'altro se lo schermo è piccolo) */
-/* --- OTTIMIZZAZIONE MOBILE DEFINITIVA --- */
 @media (max-width: 1024px) {
-    .sidebar {
-        position: fixed !important;
-        top: 0; left: 0;
-        width: 280px !important;
-        height: 100vh !important;
-        transform: translateX(-100%);
-        transition: transform 0.3s ease;
-        z-index: 10000 !important;
-        background: var(--card) !important;
-        display: block !important;
+    .dashboard-middle-row {
+        grid-template-columns: 1fr;
     }
-
-    .sidebar.open { transform: translateX(0); }
-
-    .main-content {
-        margin-left: 0 !important;
-        padding: 80px 10px 20px 10px !important; /* Ridotto il margine laterale */
-        width: 100% !important;
-        box-sizing: border-box;
-        overflow-x: hidden; /* Evita che la pagina balli a destra e sinistra */
-    }
-
-    /* FORZA TUTTI I RIQUADRI A UNA SOLA COLONNA */
-    .report-grid, 
-    .dashboard-middle-row, 
-    .input-grid, 
-    #sezione-dashboard .card div[style*="grid-template-columns"] {
-        grid-template-columns: 1fr !important; 
-        gap: 10px !important;
-    }
-
-    /* SISTEMA GLI INPUT CHE SFORANO */
-    .input-grid input, 
-    .input-grid select, 
-    .input-grid button,
-    .input-grid div {
-        grid-column: span 1 !important; /* Forza ogni campo su una riga sola */
-        width: 100% !important;
-        box-sizing: border-box;
-    }
-
-    /* Sistema i tasti allegati che erano affiancati */
-    .input-grid div[style*="display: flex"] {
-        flex-direction: column !important;
-        gap: 10px !important;
-    }
-
-    #mobile-menu-btn {
-        display: flex !important;
-        position: fixed;
-        top: 15px; left: 15px;
-        z-index: 10001;
-        background: var(--primary);
-        padding: 10px 20px;
-        border-radius: 50px;
-        font-size: 14px;
-    }
-
-    .card {
-        margin-bottom: 15px !important;
-        padding: 15px !important;
-    }
-
-    .sidebar-overlay {
-        display: none;
-        position: fixed;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background: rgba(0,0,0,0.5);
-        z-index: 9999;
-    }
-    .sidebar-overlay.active { display: block; }
 }
+
 /* Rimuoviamo il margine inferiore dai widget interni per non sfasare il layout */
 #widget-velocity, #smart-insights-area {
     margin-bottom: 0 !important;
@@ -777,7 +703,6 @@ body {
     </div>
   </div>
 </div>
-<div class="sidebar-overlay" onclick="toggleSidebarMobile()"></div>
 
 <aside class="sidebar">
   <div class="brand-container">
@@ -835,11 +760,6 @@ body {
 </aside>
 
 <main class="main-content">
-<main class="main-content">
-  <!-- Pulsante per aprire il menu su Mobile -->
-  <button id="mobile-menu-btn" onclick="toggleSidebarMobile()" style="display:none; position: fixed; top: 15px; left: 15px; z-index: 10001; background: var(--primary); color: white; border: none; padding: 10px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-    ☰ Menu
-  </button>
 <!-- DASHBOARD -->
 <div id="sezione-dashboard">
     <div class="card hero-card">
@@ -943,40 +863,26 @@ body {
       </div>
     </div>
 
-<div class="card">
-      <span class="section-title">Cronologia Operazioni</span>
-      
-      <!-- Contenitore Filtri Ottimizzato -->
-      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; margin-bottom: 25px; align-items: center;">
-          
-          <select id="filtroBanca" onchange="renderLista()" style="width:100%">
-              <option value="tutte">Tutti i conti</option>
-          </select>
-          
-          <select id="filtroCategoria" onchange="renderLista()" style="width:100%">
-              <option value="tutte">Tutte le categorie</option>
-          </select>
-          
-          <select id="filtroTipoMovimento" onchange="renderLista()" style="width:100%">
-              <option value="tutti">Tutti i movimenti</option>
-              <option value="entrata">Entrate</option>
-              <option value="spesa">Uscite</option>
-          </select>
-          
-          <select id="filtroMovimentiTecnici" onchange="renderLista()" style="width:100%">
-              <option value="escludi">Escludi Giroconti</option>
-              <option value="includi">Includi Giroconti</option>
-          </select>
-          
-          <select id="limiteLista" onchange="renderLista()" style="width:100%">
-              <option value="20">Mostra 20 op.</option>
-              <option value="50">Mostra 50 op.</option>
-              <option value="all">Mostra Tutte</option>
-          </select>
-          
-          <input type="text" id="cerca" placeholder="Cerca nel testo..." oninput="renderLista()" style="width:100%">
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px">
+        <span class="section-title" style="margin:0">Cronologia Operazioni</span>
+        <select id="filtroBanca" onchange="renderLista()" style="padding:8px; font-size:12px; background:var(--bg)"><option value="tutte">Tutti i conti</option></select>
+  <select id="filtroCategoria" onchange="renderLista()" style="padding:8px; font-size:12px; background:var(--bg)"><option value="tutte">Tutte le categorie</option></select>
+  <!-- NUOVO FILTRO TIPO MOVIMENTO -->
+  <select id="filtroTipoMovimento" onchange="renderLista()" style="padding:8px; font-size:12px; background:var(--bg)">
+    <option value="tutti">Tutti i movimenti</option>
+    <option value="entrata">Entrate</option>
+    <option value="spesa">Uscite</option>
+  </select>
+    <select id="filtroMovimentiTecnici" onchange="renderLista()" style="padding:8px; font-size:12px; background:var(--bg)">
+    <option value="escludi">Escludi Giroconti</option>
+    <option value="includi">Includi Giroconti</option>
+  </select>
+  <!---------------------------------->
+  <select id="limiteLista" onchange="renderLista()" style="padding:8px; font-size:12px; background:var(--bg)"><option value="20">20 op.</option><option value="50">50 op.</option><option value="all">Tutte</option></select>
+  <input type="text" id="cerca" placeholder="Cerca..." oninput="renderLista()" style="width:160px; background:var(--bg); padding:8px">
+</div>
       </div>
-
       <div id="listaMovimenti"></div>
     </div>
   </div>
@@ -1167,32 +1073,6 @@ body {
 </main>
 
 <script>
-function toggleSidebarMobile() {
-    const sidebar = document.querySelector('.sidebar');
-    const overlay = document.querySelector('.sidebar-overlay');
-    const btn = document.getElementById('mobile-menu-btn');
-    
-    sidebar.classList.toggle('open');
-    if (overlay) overlay.classList.toggle('active');
-    
-    if (sidebar.classList.contains('open')) {
-        btn.innerHTML = '✕ Chiudi';
-        document.body.style.overflow = 'hidden'; // Blocca lo scroll sotto il menu
-    } else {
-        btn.innerHTML = '☰ Menu';
-        document.body.style.overflow = 'auto';
-    }
-}
-
-// Chiudi il menu automaticamente quando clicchi su una voce del menu
-document.addEventListener('click', function(e) {
-    if (window.innerWidth <= 1024 && e.target.classList.contains('btn-nav')) {
-        const sidebar = document.querySelector('.sidebar');
-        if (sidebar.classList.contains('open')) {
-            toggleSidebarMobile();
-        }
-    }
-});
 let dataCorrenteCalendario = new Date();
 
 function cambiaMeseCalendario(direzione) {
